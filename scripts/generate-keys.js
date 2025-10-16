@@ -7,9 +7,9 @@
 
 const crypto = require('crypto');
 
-// Generate a single key
+// Generate a single key (9 digits)
 function generateKey() {
-    return crypto.randomBytes(16).toString('hex').toUpperCase();
+    return Math.floor(100000000 + Math.random() * 900000000).toString();
 }
 
 // Generate multiple keys
@@ -61,12 +61,12 @@ function validateKey(key) {
     
     const cleanKey = key.replace(/\s/g, '').toUpperCase();
     
-    if (cleanKey.length !== 32) {
-        return { valid: false, error: `Invalid length: ${cleanKey.length} (must be 32)` };
+    if (cleanKey.length !== 9) {
+        return { valid: false, error: `Invalid length: ${cleanKey.length} (must be 9 digits)` };
     }
     
-    if (!/^[0-9A-F]{32}$/.test(cleanKey)) {
-        return { valid: false, error: 'Invalid characters (only 0-9, A-F allowed)' };
+    if (!/^[0-9]{9}$/.test(cleanKey)) {
+        return { valid: false, error: 'Invalid characters (only 0-9 allowed)' };
     }
     
     return { valid: true, key: cleanKey };

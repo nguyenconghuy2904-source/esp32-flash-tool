@@ -143,12 +143,16 @@ export default function Home() {
   const selectedChipInfo = CHIPS.find(chip => chip.id === selectedChip)
   const selectedFirmwareInfo = FIRMWARES.find(fw => fw.id === selectedFirmware)
 
-  // Auto show YouTube ad when firmware is selected
+  // Auto show YouTube ad once per session
   useEffect(() => {
-    if (selectedFirmware && selectedFirmwareInfo?.youtubeUrl) {
-      setTimeout(() => setShowYouTubeAd(true), 1000)
+    const hasSeenYouTubeAd = localStorage.getItem('hasSeenYouTubeAd')
+    if (!hasSeenYouTubeAd) {
+      setTimeout(() => {
+        setShowYouTubeAd(true)
+        localStorage.setItem('hasSeenYouTubeAd', 'true')
+      }, 3000)
     }
-  }, [selectedFirmware, selectedFirmwareInfo])
+  }, [])
 
   const handleKeyValidation = async () => {
     if (!authKey.trim()) return
@@ -254,21 +258,28 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-200">
       {/* Header */}
-      <header className="bg-black/20 backdrop-blur-sm border-b border-white/10">
+      <header className="bg-white shadow-2xl border-b border-gray-200"
+              style={{
+                boxShadow: '0 10px 30px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8)'
+              }}>
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">ESP</span>
+              <div className="w-12 h-12 bg-gradient-to-br from-black to-gray-800 rounded-xl flex items-center justify-center shadow-lg"
+                   style={{
+                     boxShadow: '0 8px 25px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
+                     transform: 'translateZ(10px)'
+                   }}>
+                <span className="text-white font-bold text-xl">MZ</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">ESP32 Flash Tool</h1>
-                <p className="text-blue-200 text-sm">Công cụ nạp firmware cho ESP32 với xác thực key</p>
+                <h1 className="text-2xl font-bold text-black">MinizFlash Tool</h1>
+                <p className="text-gray-600 text-sm">Công cụ nạp firmware cho ESP32 với xác thực key</p>
               </div>
             </div>
-            <div className="text-right text-white/60 text-sm">
+            <div className="text-right text-gray-500 text-sm">
               <p>💻 Vui lòng sử dụng máy tính để nạp chương trình</p>
               <p>🔧 Nhấn giữ nút BOOT và cắm cáp nếu bị lỗi</p>
             </div>
@@ -277,24 +288,42 @@ export default function Home() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Facebook Group Notice */}
-        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-8">
-          <div className="flex items-center space-x-3">
-            <div className="text-2xl">🌟</div>
+        {/* Contact Notice */}
+        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl p-6 mb-8 shadow-lg"
+             style={{
+               boxShadow: '0 15px 35px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)'
+             }}>
+          <div className="flex items-center space-x-4">
+            <div className="text-3xl bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full w-16 h-16 flex items-center justify-center shadow-lg">
+              💬
+            </div>
             <div>
-              <h3 className="text-yellow-300 font-semibold">Nhóm Facebook ESP32 VN</h3>
-              <p className="text-yellow-200 text-sm">Để được hướng dẫn chi tiết và hỗ trợ kỹ thuật</p>
-              <button className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                Tham gia
-              </button>
+              <h3 className="text-orange-700 font-bold text-lg">Liên hệ hỗ trợ</h3>
+              <p className="text-orange-600 text-sm mb-2">Để được hướng dẫn chi tiết và hỗ trợ kỹ thuật</p>
+              <div className="flex gap-3">
+                <a href="http://zalo.me/0389827643" 
+                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-md">
+                  📱 Zalo: 0389827643
+                </a>
+                <a href="https://www.youtube.com/@miniZjp" 
+                   target="_blank" rel="noopener noreferrer"
+                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-md">
+                  🎥 YouTube
+                </a>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Step 1: Chip Selection */}
         <section className="mb-12">
-          <h2 className="text-3xl font-bold text-white mb-2">Chọn Loại Chip ESP32</h2>
-          <p className="text-blue-200 mb-6">Chọn loại chip ESP32 bạn đang sử dụng</p>
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold text-black mb-2" 
+                style={{ textShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+              Chọn Loại Chip ESP32
+            </h2>
+            <p className="text-gray-600 text-lg">Chọn loại chip ESP32 bạn đang sử dụng</p>
+          </div>
           
           <div className="grid md:grid-cols-3 gap-6">
             {CHIPS.map((chip) => (
@@ -302,21 +331,41 @@ export default function Home() {
                 key={chip.id}
                 onClick={() => setSelectedChip(chip.id)}
                 className={`
-                  cursor-pointer transition-all duration-300 transform hover:scale-105
+                  cursor-pointer transition-all duration-300 transform hover:scale-105 hover:-translate-y-2
                   ${selectedChip === chip.id 
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 border-blue-400' 
-                    : 'bg-white/5 hover:bg-white/10 border-white/10'
+                    ? 'bg-gradient-to-br from-black to-gray-800 text-white shadow-2xl border-gray-800' 
+                    : 'bg-white hover:bg-gray-50 text-black border-gray-200'
                   }
-                  border rounded-xl p-6 backdrop-blur-sm
+                  border-2 rounded-2xl p-8 shadow-lg
                 `}
+                style={{
+                  boxShadow: selectedChip === chip.id 
+                    ? '0 25px 50px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
+                    : '0 15px 35px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)'
+                }}
               >
                 <div className="text-center">
-                  <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <span className="text-gray-600 text-xs">IMG</span>
+                  <div className={`w-28 h-28 mx-auto mb-6 rounded-2xl flex items-center justify-center shadow-lg ${
+                    selectedChip === chip.id ? 'bg-white/10' : 'bg-gradient-to-br from-gray-100 to-gray-200'
+                  }`}
+                       style={{
+                         boxShadow: '0 12px 25px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.8)'
+                       }}>
+                    <span className={`text-2xl font-bold ${selectedChip === chip.id ? 'text-white' : 'text-gray-700'}`}>
+                      📱
+                    </span>
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2">{chip.name}</h3>
-                  <p className="text-gray-300 text-sm mb-3">{chip.description}</p>
-                  <div className="text-blue-300 text-xs bg-blue-500/10 rounded-lg p-2">
+                  <h3 className={`text-2xl font-bold mb-3 ${selectedChip === chip.id ? 'text-white' : 'text-black'}`}>
+                    {chip.name}
+                  </h3>
+                  <p className={`text-sm mb-4 ${selectedChip === chip.id ? 'text-gray-300' : 'text-gray-600'}`}>
+                    {chip.description}
+                  </p>
+                  <div className={`text-xs rounded-xl p-3 ${
+                    selectedChip === chip.id 
+                      ? 'bg-white/10 text-gray-200' 
+                      : 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200'
+                  }`}>
                     {chip.specs}
                   </div>
                 </div>
@@ -328,8 +377,13 @@ export default function Home() {
         {/* Step 2: Firmware Selection */}
         {selectedChip && (
           <section className="mb-12">
-            <h2 className="text-3xl font-bold text-white mb-2">Chọn Chương Trình Cần Nạp</h2>
-            <p className="text-blue-200 mb-6">Chọn firmware phù hợp với dự án của bạn</p>
+            <div className="text-center mb-8">
+              <h2 className="text-4xl font-bold text-black mb-2"
+                  style={{ textShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+                Chọn Chương Trình Cần Nạp
+              </h2>
+              <p className="text-gray-600 text-lg">Chọn firmware phù hợp với dự án của bạn</p>
+            </div>
             
             <div className="grid md:grid-cols-3 gap-6">
               {FIRMWARES.map((firmware) => (
@@ -408,11 +462,15 @@ export default function Home() {
               <div className="flex space-x-4">
                 <input
                   type="text"
-                  placeholder="Nhập 32-digit hex key..."
+                  placeholder="Nhập 9 số key..."
                   value={authKey}
-                  onChange={(e) => setAuthKey(e.target.value.toUpperCase())}
-                  className="flex-1 bg-black/20 border border-orange-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-orange-400"
-                  maxLength={32}
+                  onChange={(e) => setAuthKey(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                  className="flex-1 bg-white border-2 border-orange-300 rounded-xl px-6 py-4 text-black placeholder-gray-500 focus:outline-none focus:border-orange-500 shadow-lg"
+                  style={{
+                    boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.1), 0 2px 5px rgba(0,0,0,0.1)'
+                  }}
+                  maxLength={9}
+                  pattern="[0-9]*"
                 />
                 <button
                   onClick={handleKeyValidation}
@@ -495,6 +553,51 @@ export default function Home() {
             </div>
           </section>
         )}
+
+        {/* Firmware Storage Guide */}
+        <section className="mb-12">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-8 shadow-lg"
+               style={{
+                 boxShadow: '0 15px 35px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)'
+               }}>
+            <h3 className="text-2xl font-bold text-blue-700 mb-6 flex items-center">
+              <span className="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">📁</span>
+              Firmware được lưu trữ ở đâu?
+            </h3>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white rounded-xl p-6 shadow-md">
+                <h4 className="font-bold text-gray-800 mb-3 flex items-center">
+                  <span className="text-green-500 mr-2">☁️</span>
+                  GitHub Releases (Khuyến nghị)
+                </h4>
+                <ul className="space-y-2 text-gray-600 text-sm">
+                  <li>• Tự động tải từ repository GitHub</li>
+                  <li>• Version control và changelog</li>
+                  <li>• Download nhanh và ổn định</li>
+                  <li>• Miễn phí và không giới hạn</li>
+                </ul>
+              </div>
+              <div className="bg-white rounded-xl p-6 shadow-md">
+                <h4 className="font-bold text-gray-800 mb-3 flex items-center">
+                  <span className="text-blue-500 mr-2">📤</span>
+                  Upload File Local
+                </h4>
+                <ul className="space-y-2 text-gray-600 text-sm">
+                  <li>• Upload file .bin từ máy tính</li>
+                  <li>• Phù hợp với firmware tự build</li>
+                  <li>• Kiểm soát hoàn toàn file nguồn</li>
+                  <li>• Hỗ trợ file tối đa 10MB</li>
+                </ul>
+              </div>
+            </div>
+            <div className="mt-6 p-4 bg-yellow-100 border border-yellow-300 rounded-xl">
+              <p className="text-yellow-700 text-sm font-medium">
+                💡 <strong>Gợi ý:</strong> Sử dụng GitHub Releases để quản lý firmware dễ dàng. 
+                Firmware sẽ được tải trực tiếp từ cloud, không cần upload thủ công.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {/* Usage Instructions */}
         <section className="mb-12">
@@ -617,7 +720,7 @@ export default function Home() {
       )}
 
       {/* YouTube Advertisement Popup */}
-      {showYouTubeAd && selectedFirmwareInfo?.youtubeUrl && (
+      {showYouTubeAd && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-gradient-to-r from-red-900 to-purple-900 rounded-2xl max-w-2xl w-full">
             <div className="p-6">
@@ -636,21 +739,21 @@ export default function Home() {
                 <div className="bg-black/20 rounded-lg p-8 mb-6">
                   <div className="text-6xl mb-4">📺</div>
                   <p className="text-white mb-4">
-                    Xem video hướng dẫn chi tiết cho <strong>{selectedFirmwareInfo.name}</strong>
+                    Chào mừng đến với <strong>MinizFlash Tool</strong>!
                   </p>
                   <p className="text-gray-300 text-sm">
-                    Học cách cài đặt, cấu hình và sử dụng firmware một cách hiệu quả nhất!
+                    Đăng ký kênh YouTube để xem hướng dẫn chi tiết và nhận firmware mới nhất!
                   </p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a
-                    href={selectedFirmwareInfo.youtubeUrl}
+                    href="https://www.youtube.com/@miniZjp"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
                   >
-                    🎬 Xem trên YouTube
+                    🎬 Subscribe @miniZjp
                   </a>
                   
                   <button
@@ -671,15 +774,18 @@ export default function Home() {
       )}
 
       {/* Footer */}
-      <footer className="bg-black/20 backdrop-blur-sm border-t border-white/10 py-8">
+      <footer className="bg-white shadow-2xl border-t border-gray-200 py-8"
+              style={{
+                boxShadow: '0 -10px 30px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)'
+              }}>
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
-              <h4 className="text-white font-semibold mb-4">Liên Hệ</h4>
-              <div className="space-y-2 text-gray-300 text-sm">
-                <a href="#" className="block hover:text-blue-300">💬 Zalo</a>
-                <a href="#" className="block hover:text-blue-300">🎵 TikTok</a>
-                <a href="#" className="block hover:text-blue-300">📘 Facebook</a>
+              <h4 className="text-black font-semibold mb-4">Liên Hệ</h4>
+              <div className="space-y-2 text-gray-600 text-sm">
+                <a href="http://zalo.me/0389827643" className="block hover:text-blue-600 transition-colors">� Zalo: 0389827643</a>
+                <a href="https://www.youtube.com/@miniZjp" target="_blank" rel="noopener noreferrer" className="block hover:text-red-600 transition-colors">� YouTube: @miniZjp</a>
+                <a href="#" className="block hover:text-green-600 transition-colors">📘 Facebook</a>
               </div>
             </div>
             <div>
