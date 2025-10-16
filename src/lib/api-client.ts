@@ -25,7 +25,7 @@ class ApiClient {
   private baseUrl: string
 
   constructor(baseUrl: string = API_BASE_URL) {
-    this.baseUrl = baseUrl.replace('/api', '') // Remove /api suffix for Cloudflare Workers
+    this.baseUrl = baseUrl // Use URL as-is for Cloudflare Workers
   }
 
   private async fetchApi<T>(
