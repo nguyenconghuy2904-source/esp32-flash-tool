@@ -29,9 +29,9 @@ function errorResponse(message: string, status = 400) {
   return jsonResponse({ success: false, message }, status)
 }
 
-// Key validation function
+// Key validation function - updated to support 9-digit numeric keys
 function validateKeyFormat(key: string): boolean {
-  return /^[A-Fa-f0-9]{32}$/.test(key)
+  return /^[0-9]{9}$/.test(key)
 }
 
 // Generate device fingerprint from request
@@ -62,16 +62,16 @@ export default {
         }
 
         if (!validateKeyFormat(key)) {
-          return errorResponse('Key không đúng định dạng (phải là 32 ký tự hex)')
+          return errorResponse('Key không đúng định dạng (phải là 9 chữ số)')
         }
 
         // Generate device ID from request if not provided
         const deviceId = providedDeviceId || generateDeviceId(request)
 
-        // Check if key exists in database
+        // Check if key exists in database (9-digit keys are stored as-is, not uppercased)
         const keyRecord = await env.DB.prepare(
           'SELECT * FROM auth_keys WHERE key_hash = ?'
-        ).bind(key.toUpperCase()).first()
+        ).bind(key).first()
 
         if (!keyRecord) {
           return errorResponse('Key không tồn tại trong hệ thống', 401)
@@ -85,13 +85,13 @@ export default {
         // Mark key as used
         await env.DB.prepare(
           'UPDATE auth_keys SET is_used = 1, device_id = ?, used_at = datetime("now") WHERE key_hash = ?'
-        ).bind(deviceId, key.toUpperCase()).run()
+        ).bind(deviceId, key).run()
 
         // Log usage for analytics
         await env.DB.prepare(
           'INSERT INTO usage_logs (key_hash, device_id, ip_address, user_agent, timestamp) VALUES (?, ?, ?, ?, datetime("now"))'
         ).bind(
-          key.toUpperCase(),
+          key,
           deviceId,
           request.headers.get('CF-Connecting-IP') || '127.0.0.1',
           request.headers.get('User-Agent') || 'Unknown'
@@ -114,7 +114,7 @@ export default {
 
         const keyRecord = await env.DB.prepare(
           'SELECT is_used, device_id, created_at, used_at FROM auth_keys WHERE key_hash = ?'
-        ).bind(key.toUpperCase()).first()
+        ).bind(key).first()
 
         if (!keyRecord) {
           return errorResponse('Key không tồn tại', 404)
@@ -149,11 +149,11 @@ export default {
           }
         }
 
-        // Insert keys to database
+        // Insert keys to database (9-digit keys are stored as-is)
         for (const key of keys) {
           await env.DB.prepare(
             'INSERT OR IGNORE INTO auth_keys (key_hash, description, created_at) VALUES (?, ?, datetime("now"))'
-          ).bind(key.toUpperCase(), description || 'Bulk import').run()
+          ).bind(key, description || 'Bulk import').run()
         }
 
         return jsonResponse({
