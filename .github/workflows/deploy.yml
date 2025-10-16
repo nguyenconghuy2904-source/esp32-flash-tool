@@ -13,7 +13,7 @@ permissions:
 
 # Allow only one concurrent deployment, cancelling older runs
 concurrency:
-  group: "pages"
+  group: "pages-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
