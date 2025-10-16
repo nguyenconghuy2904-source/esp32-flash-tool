@@ -259,28 +259,27 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-200">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white shadow-2xl border-b border-gray-200"
+      <header className="bg-primary shadow-xl border-b-4 border-primary-dark"
               style={{
-                boxShadow: '0 10px 30px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8)'
+                boxShadow: '0 10px 30px rgba(0,136,122,0.3)'
               }}>
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-black to-gray-800 rounded-xl flex items-center justify-center shadow-lg"
+              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg"
                    style={{
-                     boxShadow: '0 8px 25px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
-                     transform: 'translateZ(10px)'
+                     boxShadow: '0 8px 25px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.5)',
                    }}>
-                <span className="text-white font-bold text-xl">MZ</span>
+                <span className="text-primary font-bold text-xl">MZ</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-black">MinizFlash Tool</h1>
-                <p className="text-gray-600 text-sm">Công cụ nạp firmware cho ESP32 với xác thực key</p>
+                <h1 className="text-2xl font-bold text-white">MinizFlash Tool</h1>
+                <p className="text-white/80 text-sm">Công cụ nạp firmware cho ESP32 với xác thực key</p>
               </div>
             </div>
-            <div className="text-right text-gray-500 text-sm">
+            <div className="text-right text-white/80 text-sm">
               <p>💻 Vui lòng sử dụng máy tính để nạp chương trình</p>
               <p>🔧 Nhấn giữ nút BOOT và cắm cáp nếu bị lỗi</p>
             </div>
@@ -290,20 +289,20 @@ export default function Home() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Contact Notice */}
-        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl p-6 mb-8 shadow-lg"
+        <div className="bg-secondary border-2 border-secondary-dark rounded-2xl p-6 mb-8 shadow-lg"
              style={{
-               boxShadow: '0 15px 35px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)'
+               boxShadow: '0 15px 35px rgba(0,136,122,0.15)'
              }}>
           <div className="flex items-center space-x-4">
-            <div className="text-3xl bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full w-16 h-16 flex items-center justify-center shadow-lg">
+            <div className="text-3xl bg-primary rounded-full w-16 h-16 flex items-center justify-center shadow-lg text-white">
               💬
             </div>
             <div>
-              <h3 className="text-orange-700 font-bold text-lg">Liên hệ hỗ trợ</h3>
-              <p className="text-orange-600 text-sm mb-2">Để được hướng dẫn chi tiết và hỗ trợ kỹ thuật</p>
+              <h3 className="text-primary font-bold text-lg">Liên hệ hỗ trợ</h3>
+              <p className="text-primary-dark text-sm mb-2">Để được hướng dẫn chi tiết và hỗ trợ kỹ thuật</p>
               <div className="flex gap-3">
                 <a href="http://zalo.me/0389827643" 
-                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-md">
+                   className="bg-accent-blue hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-md">
                   📱 Zalo: 0389827643
                 </a>
                 <a href="https://www.youtube.com/@miniZjp" 
@@ -319,11 +318,11 @@ export default function Home() {
         {/* Step 1: Chip Selection */}
         <section className="mb-12">
           <div className="text-center mb-8">
-            <h2 className="text-4xl font-bold text-black mb-2" 
-                style={{ textShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+            <h2 className="text-4xl font-bold text-primary mb-2" 
+                style={{ textShadow: '0 4px 8px rgba(0,136,122,0.15)' }}>
               Chọn Loại Chip ESP32
             </h2>
-            <p className="text-gray-600 text-lg">Chọn loại chip ESP32 bạn đang sử dụng</p>
+            <p className="text-primary-dark text-lg">Chọn loại chip ESP32 bạn đang sử dụng</p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-6">
@@ -334,38 +333,38 @@ export default function Home() {
                 className={`
                   cursor-pointer transition-all duration-300 transform hover:scale-105 hover:-translate-y-2
                   ${selectedChip === chip.id 
-                    ? 'bg-gradient-to-br from-black to-gray-800 text-white shadow-2xl border-gray-800' 
-                    : 'bg-white hover:bg-gray-50 text-black border-gray-200'
+                    ? 'bg-primary text-white shadow-2xl border-primary-dark' 
+                    : 'bg-white hover:bg-accent-lightBlue text-primary border-primary/20'
                   }
                   border-2 rounded-2xl p-8 shadow-lg
                 `}
                 style={{
                   boxShadow: selectedChip === chip.id 
-                    ? '0 25px 50px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
-                    : '0 15px 35px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)'
+                    ? '0 25px 50px rgba(0,136,122,0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
+                    : '0 15px 35px rgba(0,136,122,0.1)'
                 }}
               >
                 <div className="text-center">
                   <div className={`w-28 h-28 mx-auto mb-6 rounded-2xl flex items-center justify-center shadow-lg ${
-                    selectedChip === chip.id ? 'bg-white/10' : 'bg-gradient-to-br from-gray-100 to-gray-200'
+                    selectedChip === chip.id ? 'bg-white/20' : 'bg-secondary'
                   }`}
                        style={{
-                         boxShadow: '0 12px 25px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.8)'
+                         boxShadow: '0 12px 25px rgba(0,136,122,0.2)'
                        }}>
-                    <span className={`text-2xl font-bold ${selectedChip === chip.id ? 'text-white' : 'text-gray-700'}`}>
+                    <span className={`text-2xl font-bold ${selectedChip === chip.id ? 'text-white' : 'text-primary'}`}>
                       📱
                     </span>
                   </div>
-                  <h3 className={`text-2xl font-bold mb-3 ${selectedChip === chip.id ? 'text-white' : 'text-black'}`}>
+                  <h3 className={`text-2xl font-bold mb-3 ${selectedChip === chip.id ? 'text-white' : 'text-primary'}`}>
                     {chip.name}
                   </h3>
-                  <p className={`text-sm mb-4 ${selectedChip === chip.id ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p className={`text-sm mb-4 ${selectedChip === chip.id ? 'text-white/80' : 'text-primary-dark'}`}>
                     {chip.description}
                   </p>
                   <div className={`text-xs rounded-xl p-3 ${
                     selectedChip === chip.id 
-                      ? 'bg-white/10 text-gray-200' 
-                      : 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200'
+                      ? 'bg-white/10 text-white/90' 
+                      : 'bg-accent-lightBlue text-accent-blue border border-accent-blue/30'
                   }`}>
                     {chip.specs}
                   </div>
@@ -379,11 +378,11 @@ export default function Home() {
         {selectedChip && (
           <section className="mb-12">
             <div className="text-center mb-8">
-              <h2 className="text-4xl font-bold text-black mb-2"
-                  style={{ textShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+              <h2 className="text-4xl font-bold text-primary mb-2"
+                  style={{ textShadow: '0 4px 8px rgba(0,136,122,0.15)' }}>
                 Chọn Chương Trình Cần Nạp
               </h2>
-              <p className="text-gray-600 text-lg">Chọn firmware phù hợp với dự án của bạn</p>
+              <p className="text-primary-dark text-lg">Chọn firmware phù hợp với dự án của bạn</p>
             </div>
             
             <div className="grid md:grid-cols-3 gap-6">
@@ -394,14 +393,14 @@ export default function Home() {
                   className={`
                     cursor-pointer transition-all duration-300 transform hover:scale-105
                     ${selectedFirmware === firmware.id 
-                      ? 'bg-gradient-to-r from-green-600 to-blue-600 border-green-400' 
-                      : 'bg-white/5 hover:bg-white/10 border-white/10'
+                      ? 'bg-primary border-primary-dark shadow-xl' 
+                      : 'bg-white hover:bg-accent-lightBlue border-primary/20'
                     }
-                    border rounded-xl overflow-hidden backdrop-blur-sm
+                    border-2 rounded-xl overflow-hidden
                   `}
                 >
-                  <div className="h-48 bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                    <span className="text-white text-6xl">
+                  <div className={`h-48 flex items-center justify-center ${selectedFirmware === firmware.id ? 'bg-white/10' : 'bg-secondary'}`}>
+                    <span className={`text-6xl ${selectedFirmware === firmware.id ? 'text-white' : 'text-primary'}`}>
                       {firmware.id === 'robot-otto' && '🤖'}
                       {firmware.id === 'dogmaster' && '🐕'}
                       {firmware.id === 'smart-switch-pc' && '💻'}
@@ -410,17 +409,17 @@ export default function Home() {
                   
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-xl font-bold text-white">{firmware.name}</h3>
-                      <span className="text-sm bg-blue-500/20 text-blue-300 px-2 py-1 rounded">
+                      <h3 className={`text-xl font-bold ${selectedFirmware === firmware.id ? 'text-white' : 'text-primary'}`}>{firmware.name}</h3>
+                      <span className={`text-sm px-2 py-1 rounded ${selectedFirmware === firmware.id ? 'bg-white/20 text-white' : 'bg-accent-lightBlue text-accent-blue'}`}>
                         {firmware.version}
                       </span>
                     </div>
                     
-                    <p className="text-gray-300 text-sm mb-4">{firmware.description}</p>
+                    <p className={`text-sm mb-4 ${selectedFirmware === firmware.id ? 'text-white/80' : 'text-primary-dark'}`}>{firmware.description}</p>
                     
                     <div className="space-y-2 mb-4">
                       {firmware.features.slice(0, 3).map((feature, idx) => (
-                        <div key={idx} className="text-green-300 text-xs flex items-center">
+                        <div key={idx} className={`text-xs flex items-center ${selectedFirmware === firmware.id ? 'text-white/90' : 'text-primary'}`}>
                           <span className="mr-2">✓</span>
                           {feature}
                         </div>
@@ -430,8 +429,8 @@ export default function Home() {
                     <div className="flex items-center justify-between">
                       <span className={`text-xs px-2 py-1 rounded ${
                         firmware.requiresKey 
-                          ? 'bg-orange-500/20 text-orange-300' 
-                          : 'bg-green-500/20 text-green-300'
+                          ? selectedFirmware === firmware.id ? 'bg-white/20 text-white' : 'bg-secondary text-primary' 
+                          : selectedFirmware === firmware.id ? 'bg-white/20 text-white' : 'bg-green-100 text-green-700'
                       }`}>
                         {firmware.requiresKey ? '🔑 Cần Key' : '🆓 Miễn phí'}
                       </span>
@@ -441,7 +440,7 @@ export default function Home() {
                           e.stopPropagation()
                           setShowDetails(true)
                         }}
-                        className="text-blue-300 hover:text-blue-200 text-xs underline"
+                        className={`text-xs underline ${selectedFirmware === firmware.id ? 'text-white hover:text-white/80' : 'text-accent-blue hover:text-blue-700'}`}
                       >
                         Chi tiết →
                       </button>
@@ -456,9 +455,9 @@ export default function Home() {
         {/* Step 3: Key Authentication */}
         {selectedFirmware && selectedFirmwareInfo?.requiresKey && (
           <section className="mb-12">
-            <div className="bg-gradient-to-r from-orange-600/10 to-red-600/10 border border-orange-500/20 rounded-xl p-6">
-              <h3 className="text-xl font-bold text-orange-300 mb-4">🔑 Xác Thực Key</h3>
-              <p className="text-orange-200 mb-4">Firmware này yêu cầu key để sử dụng. Nhập key của bạn:</p>
+            <div className="bg-secondary border-2 border-secondary-dark rounded-xl p-6 shadow-lg">
+              <h3 className="text-xl font-bold text-primary mb-4">🔑 Xác Thực Key</h3>
+              <p className="text-primary-dark mb-4">Firmware này yêu cầu key để sử dụng. Nhập key của bạn:</p>
               
               <div className="flex space-x-4">
                 <input
@@ -466,9 +465,9 @@ export default function Home() {
                   placeholder="Nhập 9 số key..."
                   value={authKey}
                   onChange={(e) => setAuthKey(e.target.value.replace(/\D/g, '').slice(0, 9))}
-                  className="flex-1 bg-white border-2 border-orange-300 rounded-xl px-6 py-4 text-black placeholder-gray-500 focus:outline-none focus:border-orange-500 shadow-lg"
+                  className="flex-1 bg-white border-2 border-primary/30 rounded-xl px-6 py-4 text-primary placeholder-gray-400 focus:outline-none focus:border-primary shadow-lg"
                   style={{
-                    boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.1), 0 2px 5px rgba(0,0,0,0.1)'
+                    boxShadow: 'inset 0 2px 10px rgba(0,136,122,0.1)'
                   }}
                   maxLength={9}
                   pattern="[0-9]*"
@@ -476,14 +475,14 @@ export default function Home() {
                 <button
                   onClick={handleKeyValidation}
                   disabled={isValidatingKey || !authKey.trim()}
-                  className="bg-orange-600 hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                  className="bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   {isValidatingKey ? '⏳' : '🔓'} Xác thực
                 </button>
               </div>
               
               {keyValidated && (
-                <div className="mt-4 text-green-300 text-sm">
+                <div className="mt-4 text-primary font-semibold text-sm">
                   ✅ Key hợp lệ! Device ID: {deviceId.slice(0, 16)}...
                 </div>
               )}
@@ -495,18 +494,18 @@ export default function Home() {
         {/* Step 4: Flash Actions */}
         {selectedChip && selectedFirmware && (selectedFirmwareInfo?.requiresKey ? keyValidated : true) && (
           <section className="mb-12">
-            <div className="bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-blue-500/20 rounded-xl p-6">
-              <h3 className="text-xl font-bold text-blue-300 mb-4">🚀 Nạp Firmware</h3>
+            <div className="bg-accent-lightBlue border-2 border-accent-blue/30 rounded-xl p-6 shadow-lg">
+              <h3 className="text-xl font-bold text-primary mb-4">🚀 Nạp Firmware</h3>
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <button
                   onClick={handleConnect}
                   disabled={isConnected}
                   className={`
                     ${isConnected 
-                      ? 'bg-green-600/20 border-green-500/30 text-green-300' 
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      ? 'bg-green-100 border-green-500 text-green-700' 
+                      : 'bg-accent-blue hover:bg-blue-700 text-white'
                     }
-                    border rounded-lg px-6 py-4 font-medium transition-colors disabled:cursor-not-allowed
+                    border-2 rounded-lg px-6 py-4 font-medium transition-colors disabled:cursor-not-allowed shadow-md
                   `}
                 >
                   {isConnected ? '✅ Đã kết nối ESP32' : '🔌 Kết nối ESP32'}
@@ -514,7 +513,7 @@ export default function Home() {
                 <button
                   onClick={handleFlash}
                   disabled={!isConnected || flashProgress !== null}
-                  className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white border border-green-500/30 rounded-lg px-6 py-4 font-medium transition-colors"
+                  className="bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-white border-2 border-primary-dark rounded-lg px-6 py-4 font-medium transition-colors shadow-md"
                 >
                   {flashProgress ? '⏳ Đang nạp...' : '⚡ Bắt đầu nạp Firmware'}
                 </button>
@@ -522,13 +521,13 @@ export default function Home() {
               {/* Progress Bar */}
               {flashProgress && (
                 <div className="mb-4">
-                  <div className="flex justify-between text-sm text-blue-300 mb-2">
+                  <div className="flex justify-between text-sm text-primary font-semibold mb-2">
                     <span>Tiến độ: {flashProgress.progress}%</span>
                     <span>{flashProgress.stage}</span>
                   </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div className="w-full bg-gray-200 rounded-full h-3 border border-primary/20">
                     <div
-                      className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300"
+                      className="bg-primary h-3 rounded-full transition-all duration-300 shadow-md"
                       style={{ width: `${flashProgress.progress}%` }}
                     ></div>
                   </div>
@@ -537,12 +536,12 @@ export default function Home() {
               {/* Status Message */}
               {flashStatus && (
                 <div className={`
-                  p-4 rounded-lg text-sm font-medium
+                  p-4 rounded-lg text-sm font-medium border-2
                   ${flashStatus.includes('✅') || flashStatus.includes('🎉') 
-                    ? 'bg-green-500/10 border border-green-500/20 text-green-300'
+                    ? 'bg-green-50 border-green-500 text-green-700'
                     : flashStatus.includes('❌') 
-                    ? 'bg-red-500/10 border border-red-500/20 text-red-300'
-                    : 'bg-blue-500/10 border border-blue-500/20 text-blue-300'
+                    ? 'bg-red-50 border-red-500 text-red-700'
+                    : 'bg-accent-lightBlue border-accent-blue text-primary'
                   }
                 `}>
                   {flashStatus}
@@ -559,9 +558,9 @@ export default function Home() {
 
         {/* Usage Instructions */}
         <section className="mb-12">
-          <div className="bg-gradient-to-r from-indigo-600/10 to-purple-600/10 border border-indigo-500/20 rounded-xl p-6">
-            <h3 className="text-xl font-bold text-indigo-300 mb-4">📋 Hướng dẫn sử dụng:</h3>
-            <div className="grid md:grid-cols-2 gap-6 text-sm text-indigo-200">
+          <div className="bg-secondary border-2 border-secondary-dark rounded-xl p-6 shadow-lg">
+            <h3 className="text-xl font-bold text-primary mb-4">📋 Hướng dẫn sử dụng:</h3>
+            <div className="grid md:grid-cols-2 gap-6 text-sm text-primary-dark">
               <div>
                 <h4 className="font-semibold mb-2">🔌 Kết nối ESP32:</h4>
                 <ol className="space-y-1 list-decimal list-inside">
@@ -584,8 +583,8 @@ export default function Home() {
               </div>
             </div>
             
-            <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-              <p className="text-yellow-300 text-sm">
+            <div className="mt-6 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
+              <p className="text-yellow-800 text-sm">
                 <strong>💡 Lưu ý:</strong> Mỗi key chỉ có thể sử dụng với một thiết bị duy nhất. 
                 Nếu bạn chưa có key mà spam kích hoạt, chip ESP32 sẽ bị đưa vào danh sách chặn sau 5 lần thử.
               </p>
@@ -732,31 +731,31 @@ export default function Home() {
       )}
 
       {/* Footer */}
-      <footer className="bg-white shadow-2xl border-t border-gray-200 py-8"
+      <footer className="bg-primary shadow-2xl border-t-4 border-primary-dark py-8"
               style={{
-                boxShadow: '0 -10px 30px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)'
+                boxShadow: '0 -10px 30px rgba(0,136,122,0.3)'
               }}>
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
-              <h4 className="text-black font-semibold mb-4">Liên Hệ</h4>
-              <div className="space-y-2 text-gray-600 text-sm">
-                <a href="http://zalo.me/0389827643" className="block hover:text-blue-600 transition-colors">� Zalo: 0389827643</a>
-                <a href="https://www.youtube.com/@miniZjp" target="_blank" rel="noopener noreferrer" className="block hover:text-red-600 transition-colors">� YouTube: @miniZjp</a>
-                <a href="#" className="block hover:text-green-600 transition-colors">📘 Facebook</a>
+              <h4 className="text-white font-semibold mb-4">Liên Hệ</h4>
+              <div className="space-y-2 text-white/80 text-sm">
+                <a href="http://zalo.me/0389827643" className="block hover:text-white transition-colors">📱 Zalo: 0389827643</a>
+                <a href="https://www.youtube.com/@miniZjp" target="_blank" rel="noopener noreferrer" className="block hover:text-white transition-colors">🎥 YouTube: @miniZjp</a>
+                <a href="#" className="block hover:text-white transition-colors">📘 Facebook</a>
               </div>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Tài Nguyên</h4>
-              <div className="space-y-2 text-gray-300 text-sm">
-                <a href="#" className="block hover:text-blue-300">📚 Hướng dẫn</a>
-                <a href="#" className="block hover:text-blue-300">🔧 Tools</a>
-                <a href="#" className="block hover:text-blue-300">💾 Firmware Archive</a>
+              <div className="space-y-2 text-white/80 text-sm">
+                <a href="#" className="block hover:text-white">📚 Hướng dẫn</a>
+                <a href="#" className="block hover:text-white">🔧 Tools</a>
+                <a href="#" className="block hover:text-white">💾 Firmware Archive</a>
               </div>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Thống Kê</h4>
-              <div className="text-gray-300 text-sm">
+              <div className="text-white/80 text-sm">
                 <p className="mb-2">👥 Online: 1,234</p>
                 <p className="mb-2">📦 Total Downloads: 45,678</p>
                 <div className="flex items-center">
@@ -767,9 +766,9 @@ export default function Home() {
             </div>
           </div>
           
-          <div className="border-t border-white/10 mt-8 pt-8 text-center">
-            <p className="text-gray-400 text-sm">
-              © 2025 ESP32 Flash Tool - Phát triển bởi <span className="text-blue-300">ESP32 VN Community</span>
+          <div className="border-t border-white/20 mt-8 pt-8 text-center">
+            <p className="text-white/70 text-sm">
+              © 2025 ESP32 Flash Tool - Phát triển bởi <span className="text-white font-semibold">ESP32 VN Community</span>
             </p>
           </div>
         </div>

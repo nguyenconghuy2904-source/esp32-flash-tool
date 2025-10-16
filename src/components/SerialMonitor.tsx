@@ -88,43 +88,43 @@ const SerialMonitor: React.FC = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-black rounded-lg shadow-lg p-4 mt-6">
-      <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Serial Monitor</h2>
-      <div className="flex gap-2 mb-2">
+    <div className="bg-accent-lightBlue border-2 border-accent-blue/30 rounded-lg shadow-lg p-6 mt-6">
+      <h2 className="text-2xl font-bold mb-4 text-primary">📡 Serial Monitor</h2>
+      <div className="flex gap-2 mb-4">
         {!isConnected ? (
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-4 py-2 bg-accent-blue text-white rounded-lg hover:bg-blue-700 font-medium shadow-md transition-colors"
             onClick={connectSerial}
           >
-            Kết nối thiết bị
+            🔌 Kết nối thiết bị
           </button>
         ) : (
           <>
             <button
-              className={`px-4 py-2 rounded ${monitorEnabled ? 'bg-yellow-600 text-white hover:bg-yellow-700' : 'bg-green-600 text-white hover:bg-green-700'}`}
+              className={`px-4 py-2 rounded-lg font-medium shadow-md transition-colors ${monitorEnabled ? 'bg-yellow-500 text-white hover:bg-yellow-600' : 'bg-primary text-white hover:bg-primary-dark'}`}
               onClick={monitorEnabled ? stopMonitor : startMonitor}
             >
-              {monitorEnabled ? 'Tắt Monitor' : 'Bật Monitor'}
+              {monitorEnabled ? '⏸️ Tắt Monitor' : '▶️ Bật Monitor'}
             </button>
             <button
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium shadow-md transition-colors"
               onClick={disconnectSerial}
             >
-              Ngắt kết nối
+              ⚠️ Ngắt kết nối
             </button>
             <button
-              className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+              className="px-4 py-2 bg-secondary text-primary rounded-lg hover:bg-secondary-dark font-medium shadow-md transition-colors"
               onClick={resetDevice}
             >
-              Reset thiết bị
+              🔄 Reset thiết bị
             </button>
           </>
         )}
       </div>
-      <div className="border rounded bg-gray-100 dark:bg-gray-800 p-2 h-64 overflow-y-auto font-mono text-sm text-gray-800 dark:text-gray-100">
-        {output || 'Chưa có dữ liệu.'}
+      <div className="border-2 border-primary/20 rounded-lg bg-white p-3 h-64 overflow-y-auto font-mono text-sm text-primary shadow-inner">
+        {output || 'Chưa có dữ liệu từ thiết bị...'}
       </div>
-      {error && <div className="mt-2 text-red-600">{error}</div>}
+      {error && <div className="mt-3 p-3 bg-red-50 border-2 border-red-400 rounded-lg text-red-700 text-sm font-medium">{error}</div>}
     </div>
   );
 };
