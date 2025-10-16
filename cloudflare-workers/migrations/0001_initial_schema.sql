@@ -8,11 +8,12 @@ CREATE TABLE IF NOT EXISTS auth_keys (
     is_used INTEGER DEFAULT 0,
     description TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    used_at DATETIME,
-    INDEX idx_key_hash (key_hash),
-    INDEX idx_device_id (device_id),
-    INDEX idx_is_used (is_used)
+    used_at DATETIME
 );
+
+CREATE INDEX IF NOT EXISTS idx_key_hash ON auth_keys(key_hash);
+CREATE INDEX IF NOT EXISTS idx_device_id ON auth_keys(device_id);
+CREATE INDEX IF NOT EXISTS idx_is_used ON auth_keys(is_used);
 
 -- Create usage_logs table for tracking key usage
 CREATE TABLE IF NOT EXISTS usage_logs (
@@ -21,10 +22,11 @@ CREATE TABLE IF NOT EXISTS usage_logs (
     device_id TEXT NOT NULL,
     ip_address TEXT,
     user_agent TEXT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_key_hash (key_hash),
-    INDEX idx_timestamp (timestamp)
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_usage_key_hash ON usage_logs(key_hash);
+CREATE INDEX IF NOT EXISTS idx_usage_timestamp ON usage_logs(timestamp);
 
 -- Insert sample authentication keys
 INSERT OR IGNORE INTO auth_keys (key_hash, description) VALUES 
