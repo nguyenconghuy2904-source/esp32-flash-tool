@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import SerialMonitor from '@/components/SerialMonitor'
 import Image from 'next/image'
 import { validateKeyWithDevice, generateDeviceFingerprint } from '@/lib/api-client'
 import { ESP32FlashTool, FlashProgress } from '@/lib/esp32-flash'
@@ -490,12 +491,12 @@ export default function Home() {
           </section>
         )}
 
+
         {/* Step 4: Flash Actions */}
         {selectedChip && selectedFirmware && (selectedFirmwareInfo?.requiresKey ? keyValidated : true) && (
           <section className="mb-12">
             <div className="bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-blue-500/20 rounded-xl p-6">
               <h3 className="text-xl font-bold text-blue-300 mb-4">🚀 Nạp Firmware</h3>
-              
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <button
                   onClick={handleConnect}
@@ -510,7 +511,6 @@ export default function Home() {
                 >
                   {isConnected ? '✅ Đã kết nối ESP32' : '🔌 Kết nối ESP32'}
                 </button>
-                
                 <button
                   onClick={handleFlash}
                   disabled={!isConnected || flashProgress !== null}
@@ -519,7 +519,6 @@ export default function Home() {
                   {flashProgress ? '⏳ Đang nạp...' : '⚡ Bắt đầu nạp Firmware'}
                 </button>
               </div>
-
               {/* Progress Bar */}
               {flashProgress && (
                 <div className="mb-4">
@@ -535,7 +534,6 @@ export default function Home() {
                   </div>
                 </div>
               )}
-
               {/* Status Message */}
               {flashStatus && (
                 <div className={`
@@ -553,6 +551,9 @@ export default function Home() {
             </div>
           </section>
         )}
+
+        {/* Serial Monitor Section */}
+        <SerialMonitor />
 
 
 
