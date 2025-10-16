@@ -554,50 +554,7 @@ export default function Home() {
           </section>
         )}
 
-        {/* Firmware Storage Guide */}
-        <section className="mb-12">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-8 shadow-lg"
-               style={{
-                 boxShadow: '0 15px 35px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.9)'
-               }}>
-            <h3 className="text-2xl font-bold text-blue-700 mb-6 flex items-center">
-              <span className="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">📁</span>
-              Firmware được lưu trữ ở đâu?
-            </h3>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="bg-white rounded-xl p-6 shadow-md">
-                <h4 className="font-bold text-gray-800 mb-3 flex items-center">
-                  <span className="text-green-500 mr-2">☁️</span>
-                  GitHub Releases (Khuyến nghị)
-                </h4>
-                <ul className="space-y-2 text-gray-600 text-sm">
-                  <li>• Tự động tải từ repository GitHub</li>
-                  <li>• Version control và changelog</li>
-                  <li>• Download nhanh và ổn định</li>
-                  <li>• Miễn phí và không giới hạn</li>
-                </ul>
-              </div>
-              <div className="bg-white rounded-xl p-6 shadow-md">
-                <h4 className="font-bold text-gray-800 mb-3 flex items-center">
-                  <span className="text-blue-500 mr-2">📤</span>
-                  Upload File Local
-                </h4>
-                <ul className="space-y-2 text-gray-600 text-sm">
-                  <li>• Upload file .bin từ máy tính</li>
-                  <li>• Phù hợp với firmware tự build</li>
-                  <li>• Kiểm soát hoàn toàn file nguồn</li>
-                  <li>• Hỗ trợ file tối đa 10MB</li>
-                </ul>
-              </div>
-            </div>
-            <div className="mt-6 p-4 bg-yellow-100 border border-yellow-300 rounded-xl">
-              <p className="text-yellow-700 text-sm font-medium">
-                💡 <strong>Gợi ý:</strong> Sử dụng GitHub Releases để quản lý firmware dễ dàng. 
-                Firmware sẽ được tải trực tiếp từ cloud, không cần upload thủ công.
-              </p>
-            </div>
-          </div>
-        </section>
+
 
         {/* Usage Instructions */}
         <section className="mb-12">
