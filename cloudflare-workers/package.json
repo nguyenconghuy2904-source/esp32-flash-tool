@@ -1,0 +1,20 @@
+{
+  "name": "esp32-flash-api",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for ESP32-S3 Flash Tool API",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241011.0",
+    "wrangler": "^3.78.12",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@cloudflare/d1": "^1.0.0"
+  }
+}

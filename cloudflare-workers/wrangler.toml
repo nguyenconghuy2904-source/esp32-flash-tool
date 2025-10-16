@@ -1,0 +1,23 @@
+name = "esp32-flash-api"
+main = "src/index.ts"
+compatibility_date = "2024-10-16"
+
+# D1 Database binding - REPLACE WITH YOUR ACTUAL DATABASE ID
+[[d1_databases]]
+binding = "DB"
+database_name = "esp32-flash-keys"
+database_id = "your-d1-database-id-here"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "production"
+API_VERSION = "v1"
+ALLOWED_ORIGINS = "https://minizjp.com,https://www.minizjp.com"
+
+# Development environment
+[env.development]
+name = "esp32-flash-api-dev"
+
+[env.development.vars]
+ENVIRONMENT = "development" 
+ALLOWED_ORIGINS = "http://localhost:3000"
