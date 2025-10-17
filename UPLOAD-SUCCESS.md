@@ -1,6 +1,55 @@
-# 🎉 ESP32 Flash Tool đã được upload thành công!
+# 🚀 Upload Firmware Quick Guide
 
-## 📍 Repository Information
+## 📦 Bước 1: Chuẩn bị firmware
+
+**Đặt tên file đúng format:**
+```
+esp32-s3-robot-otto.bin
+esp32-s3-zero-dogmaster.bin
+esp32-c3-super-mini-smart-switch-pc.bin
+```
+
+**Copy vào thư mục:** `firmware/`
+
+---
+
+## 🎯 Bước 2: Upload lên minizjp.com
+
+### ⚡ Cách 1: Dùng Script (Khuyến nghị)
+
+```powershell
+# Cài GitHub CLI (lần đầu)
+winget install --id GitHub.cli
+
+# Login GitHub
+gh auth login
+
+# Upload firmware
+.\scripts\upload-firmware.ps1 -Version "v1.0.0"
+```
+
+### 📝 Cách 2: Manual Upload
+
+1. **Vào:** https://github.com/nguyenconghuy2904-source/esp32-flash-tool/releases
+2. **Click:** "Draft a new release"
+3. **Điền thông tin:**
+   - Tag: `v1.0.0`
+   - Title: `MinizFlash Firmware v1.0.0`
+4. **Upload:** File .bin từ thư mục `firmware/`
+5. **Publish:** Click "Publish release"
+
+---
+
+## ✅ Bước 3: Kiểm tra
+
+1. Truy cập: **https://minizjp.com**
+2. Chọn chip và firmware
+3. Xem version mới
+4. Test download và flash
+
+---
+
+## � Repository Information
 - **GitHub Repository**: https://github.com/nguyenconghuy2904-source/esp32-flash-tool
 - **Owner**: nguyenconghuy2904-source
 - **Status**: ✅ Code đã được push thành công
