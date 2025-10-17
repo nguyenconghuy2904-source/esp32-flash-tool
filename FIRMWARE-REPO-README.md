@@ -42,12 +42,12 @@ Hệ thống huấn luyện và quản lý thú cưng thông minh
 **Tính năng:**
 - 🤖 Điều khiển robot Otto thông minh
 - 🎵 Nhận diện giọng nói và âm thanh  
-- 👁️ Camera AI nhận diện đối tượng
+
 - 📱 App điều khiển từ xa
 - 🎮 Chế độ game tương tác
 - 🔋 Quản lý pin thông minh
 
-**Yêu cầu Key:** ✅ Có
+**Yêu cầu Key:** ❌ Miễn phí
 
 #### 🐕 DogMaster v1.8.2
 **Tính năng:**

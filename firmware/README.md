@@ -51,7 +51,7 @@ firmware/
 - `esp32-c3-super-mini` - ESP32-C3 Super Mini
 
 **Firmware Categories:**
-- `robot-otto` - Robot Otto (requires key)
+- `robot-otto` - Robot Otto (free)
 - `dogmaster` - DogMaster (requires key)
 - `smart-switch-pc` - Smart Switch PC (free)
 

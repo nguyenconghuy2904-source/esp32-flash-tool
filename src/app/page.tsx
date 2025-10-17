@@ -69,14 +69,14 @@ const FIRMWARES: FirmwareInfo[] = [
       '🎮 Chế độ game tương tác',
       '🔋 Quản lý pin thông minh'
     ],
-    requiresKey: true,
+    requiresKey: false,
     youtubeUrl: 'https://youtube.com/watch?v=demo-otto',
     schematicUrl: '/schematics/robot-otto-wiring.pdf',
     version: 'v2.1.5',
     notes: [
+      '✔️ Miễn phí, không cần key',
       '✔️ Tương thích với tất cả các model Otto',
-      '✔️ Hỗ trợ nhiều cảm biến: ultrasonic, camera, mic',
-      '⚠️ Yêu cầu key để kích hoạt đầy đủ tính năng'
+      '✔️ Hỗ trợ nhiều cảm biến: ultrasonic, camera, mic'
     ]
   },
   {

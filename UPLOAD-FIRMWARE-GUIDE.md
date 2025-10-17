@@ -21,7 +21,7 @@ Website **minizjp.com** tự động lấy firmware từ **GitHub Releases**. B�
 - `esp32-c3-super-mini` - ESP32-C3 Super Mini
 
 #### 1.3 Các loại firmware:
-- `robot-otto` - Robot Otto (Yêu cầu key)
+- `robot-otto` - Robot Otto (Miễn phí)
 - `dogmaster` - DogMaster (Yêu cầu key)
 - `smart-switch-pc` - Smart Switch PC (Miễn phí)
 
@@ -212,7 +212,7 @@ Copy template này khi tạo release mới:
 - 📈 Performance improvement 3
 
 **Files:** `esp32-s3-robot-otto.bin`, `esp32-s3-zero-robot-otto.bin`, `esp32-c3-super-mini-robot-otto.bin`  
-**Yêu cầu:** 🔑 Key
+**Yêu cầu:** 🆓 Miễn phí
 
 ---
 

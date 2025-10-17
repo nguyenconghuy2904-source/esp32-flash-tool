@@ -13,7 +13,7 @@ Release đầu tiên của MinizFlash firmware với đầy đủ 3 categories c
 
 ### 📁 Firmware Files (9 files)
 
-#### 🤖 Robot Otto v2.1.5 (Yêu cầu Key)
+#### 🤖 Robot Otto v2.1.5 (Miễn phí)
 | Chip | Filename | Size | Features |
 |------|----------|------|----------|
 | ESP32-S3 | `esp32-s3-robot-otto.bin` | ~2.5MB | Full features + Camera |
