@@ -185,13 +185,43 @@ export default function Home() {
       return
     }
 
+    // Check WebSerial API support
+    if (!('serial' in navigator)) {
+      setFlashStatus('❌ Trình duyệt không hỗ trợ WebSerial API. Vui lòng dùng Chrome, Edge, hoặc Opera (không phải Firefox/Safari)')
+      return
+    }
+
+    // Check if running on HTTPS or localhost
+    if (window.location.protocol !== 'https:' && !window.location.hostname.includes('localhost') && window.location.hostname !== '127.0.0.1') {
+      setFlashStatus('❌ WebSerial chỉ hoạt động trên HTTPS hoặc localhost')
+      return
+    }
+
     try {
       setFlashStatus('🔌 Đang kết nối với ESP32...')
-      await flashTool.current.connect()
-      setIsConnected(true)
-      setFlashStatus('✅ Đã kết nối với ESP32!')
+      const connected = await flashTool.current.connect()
+      
+      if (connected) {
+        setIsConnected(true)
+        setFlashStatus('✅ Đã kết nối với ESP32!')
+      } else {
+        setFlashStatus('❌ Không thể kết nối. Vui lòng thử lại.')
+        setIsConnected(false)
+      }
     } catch (error: any) {
-      setFlashStatus(`❌ Lỗi kết nối: ${error.message}`)
+      console.error('Connection error:', error)
+      
+      // Provide specific error messages
+      if (error.name === 'NotFoundError') {
+        setFlashStatus('❌ Không tìm thấy thiết bị USB. Vui lòng cắm ESP32 và thử lại.')
+      } else if (error.name === 'NotAllowedError' || error.name === 'SecurityError') {
+        setFlashStatus('❌ Bạn đã từ chối quyền truy cập. Vui lòng thử lại và cho phép kết nối.')
+      } else if (error.name === 'NetworkError') {
+        setFlashStatus('❌ Thiết bị đang được sử dụng bởi ứng dụng khác. Đóng Arduino IDE, PlatformIO, hoặc ứng dụng serial khác.')
+      } else {
+        setFlashStatus(`❌ Lỗi kết nối: ${error.message}`)
+      }
+      
       setIsConnected(false)
     }
   }
@@ -584,10 +614,28 @@ export default function Home() {
             </div>
             
             <div className="mt-6 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
-              <p className="text-yellow-800 text-sm">
+              <p className="text-yellow-800 text-sm mb-3">
                 <strong>💡 Lưu ý:</strong> Mỗi key chỉ có thể sử dụng với một thiết bị duy nhất. 
                 Nếu bạn chưa có key mà spam kích hoạt, chip ESP32 sẽ bị đưa vào danh sách chặn sau 5 lần thử.
               </p>
+              <details className="text-yellow-800 text-sm">
+                <summary className="cursor-pointer font-semibold">🔧 Xử lý lỗi thường gặp</summary>
+                <div className="mt-3 space-y-2 pl-4">
+                  <p><strong>❌ Không hiện popup chọn USB:</strong></p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Dùng Chrome, Edge, hoặc Opera (không phải Firefox/Safari)</li>
+                    <li>Website phải chạy trên HTTPS hoặc localhost</li>
+                    <li>Kiểm tra cáp USB có kết nối tốt không</li>
+                    <li>Thử cổng USB khác trên máy tính</li>
+                  </ul>
+                  <p className="mt-2"><strong>❌ Không tìm thấy thiết bị:</strong></p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Cài driver CH340/CP2102 cho ESP32</li>
+                    <li>Đóng Arduino IDE, PlatformIO hoặc app serial khác</li>
+                    <li>Thử nhấn giữ nút BOOT khi cắm USB</li>
+                  </ul>
+                </div>
+              </details>
             </div>
           </div>
         </section>
