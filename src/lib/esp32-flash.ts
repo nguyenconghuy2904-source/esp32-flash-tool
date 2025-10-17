@@ -10,6 +10,10 @@ export class ESP32FlashTool {
   private reader: ReadableStreamDefaultReader | null = null
   private writer: WritableStreamDefaultWriter | null = null
 
+  getPort(): SerialPort | null {
+    return this.port
+  }
+
   async connect(): Promise<boolean> {
     try {
       if (!('serial' in navigator)) {

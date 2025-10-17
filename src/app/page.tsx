@@ -139,6 +139,8 @@ export default function Home() {
   const [deviceId, setDeviceId] = useState<string>('')
   const [showDetails, setShowDetails] = useState(false)
   const [showYouTubeAd, setShowYouTubeAd] = useState(false)
+  const [activeTab, setActiveTab] = useState<'flash' | 'monitor'>('flash')
+  const [serialPort, setSerialPort] = useState<SerialPort | null>(null)
   const flashTool = useRef<ESP32FlashTool>(new ESP32FlashTool())
 
   const selectedChipInfo = CHIPS.find(chip => chip.id === selectedChip)
@@ -202,6 +204,9 @@ export default function Home() {
       const connected = await flashTool.current.connect()
       
       if (connected) {
+        // Get the port from the flash tool and store it
+        const port = flashTool.current.getPort()
+        setSerialPort(port)
         setIsConnected(true)
         setFlashStatus('✅ Đã kết nối với ESP32!')
       } else {
@@ -223,6 +228,19 @@ export default function Home() {
       }
       
       setIsConnected(false)
+    }
+  }
+
+  const handleDisconnect = async () => {
+    try {
+      setFlashStatus('🔌 Đang ngắt kết nối...')
+      await flashTool.current.disconnect()
+      setSerialPort(null)
+      setIsConnected(false)
+      setFlashStatus('✅ Đã ngắt kết nối!')
+    } catch (error: any) {
+      console.error('Disconnect error:', error)
+      setFlashStatus(`❌ Lỗi ngắt kết nối: ${error.message}`)
     }
   }
 
@@ -525,64 +543,117 @@ export default function Home() {
         {selectedChip && selectedFirmware && (selectedFirmwareInfo?.requiresKey ? keyValidated : true) && (
           <section className="mb-12">
             <div className="bg-accent-lightBlue border-2 border-accent-blue/30 rounded-xl p-6 shadow-lg">
-              <h3 className="text-xl font-bold text-primary mb-4">🚀 Nạp Firmware</h3>
-              <div className="grid md:grid-cols-2 gap-6 mb-6">
+              
+              {/* Tab Navigation */}
+              <div className="flex space-x-2 mb-6 border-b-2 border-primary/20">
                 <button
-                  onClick={handleConnect}
-                  disabled={isConnected}
-                  className={`
-                    ${isConnected 
-                      ? 'bg-green-100 border-green-500 text-green-700' 
-                      : 'bg-accent-blue hover:bg-blue-700 text-white'
-                    }
-                    border-2 rounded-lg px-6 py-4 font-medium transition-colors disabled:cursor-not-allowed shadow-md
-                  `}
+                  onClick={() => setActiveTab('flash')}
+                  className={`px-6 py-3 font-medium transition-colors ${
+                    activeTab === 'flash'
+                      ? 'text-primary border-b-4 border-primary -mb-0.5'
+                      : 'text-gray-500 hover:text-primary'
+                  }`}
                 >
-                  {isConnected ? '✅ Đã kết nối ESP32' : '🔌 Kết nối ESP32'}
+                  ⚡ Flash Firmware
                 </button>
                 <button
-                  onClick={handleFlash}
-                  disabled={!isConnected || flashProgress !== null}
-                  className="bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-white border-2 border-primary-dark rounded-lg px-6 py-4 font-medium transition-colors shadow-md"
+                  onClick={() => setActiveTab('monitor')}
+                  className={`px-6 py-3 font-medium transition-colors ${
+                    activeTab === 'monitor'
+                      ? 'text-primary border-b-4 border-primary -mb-0.5'
+                      : 'text-gray-500 hover:text-primary'
+                  }`}
                 >
-                  {flashProgress ? '⏳ Đang nạp...' : '⚡ Bắt đầu nạp Firmware'}
+                  📡 Serial Monitor
                 </button>
               </div>
-              {/* Progress Bar */}
-              {flashProgress && (
-                <div className="mb-4">
-                  <div className="flex justify-between text-sm text-primary font-semibold mb-2">
-                    <span>Tiến độ: {flashProgress.progress}%</span>
-                    <span>{flashProgress.stage}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3 border border-primary/20">
-                    <div
-                      className="bg-primary h-3 rounded-full transition-all duration-300 shadow-md"
-                      style={{ width: `${flashProgress.progress}%` }}
-                    ></div>
-                  </div>
+
+              {/* Connection Status Bar */}
+              <div className="mb-6 p-4 bg-white border-2 border-primary/20 rounded-lg flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
+                  <span className="text-primary font-medium">
+                    {isConnected ? '✅ Đã kết nối ESP32' : '⚠️ Chưa kết nối'}
+                  </span>
+                </div>
+                
+                <div className="flex space-x-2">
+                  {!isConnected ? (
+                    <button
+                      onClick={handleConnect}
+                      className="bg-accent-blue hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-md"
+                    >
+                      🔌 Kết nối thiết bị
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleDisconnect}
+                      className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-md"
+                    >
+                      🔌 Ngắt kết nối
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Tab Content */}
+              {activeTab === 'flash' && (
+                <div>
+                  <h3 className="text-xl font-bold text-primary mb-4">🚀 Nạp Firmware</h3>
+                  
+                  {!isConnected && (
+                    <div className="mb-4 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg text-yellow-800 text-sm font-medium">
+                      ⚠️ Vui lòng kết nối thiết bị ESP32 ở phía trên để bắt đầu
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={handleFlash}
+                    disabled={!isConnected || flashProgress !== null}
+                    className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-white border-2 border-primary-dark rounded-lg px-6 py-4 font-medium transition-colors shadow-md mb-4"
+                  >
+                    {flashProgress ? '⏳ Đang nạp...' : '⚡ Bắt đầu nạp Firmware'}
+                  </button>
+                  
+                  {/* Progress Bar */}
+                  {flashProgress && (
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm text-primary font-semibold mb-2">
+                        <span>Tiến độ: {flashProgress.progress}%</span>
+                        <span>{flashProgress.stage}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3 border border-primary/20">
+                        <div
+                          className="bg-primary h-3 rounded-full transition-all duration-300 shadow-md"
+                          style={{ width: `${flashProgress.progress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Status Message */}
+                  {flashStatus && (
+                    <div className={`
+                      p-4 rounded-lg text-sm font-medium border-2
+                      ${flashStatus.includes('✅') || flashStatus.includes('🎉') 
+                        ? 'bg-green-50 border-green-500 text-green-700'
+                        : flashStatus.includes('❌') 
+                        ? 'bg-red-50 border-red-500 text-red-700'
+                        : 'bg-accent-lightBlue border-accent-blue text-primary'
+                      }
+                    `}>
+                      {flashStatus}
+                    </div>
+                  )}
                 </div>
               )}
-              {/* Status Message */}
-              {flashStatus && (
-                <div className={`
-                  p-4 rounded-lg text-sm font-medium border-2
-                  ${flashStatus.includes('✅') || flashStatus.includes('🎉') 
-                    ? 'bg-green-50 border-green-500 text-green-700'
-                    : flashStatus.includes('❌') 
-                    ? 'bg-red-50 border-red-500 text-red-700'
-                    : 'bg-accent-lightBlue border-accent-blue text-primary'
-                  }
-                `}>
-                  {flashStatus}
-                </div>
+
+              {activeTab === 'monitor' && (
+                <SerialMonitor port={serialPort} isConnected={isConnected} />
               )}
             </div>
           </section>
         )}
-
-        {/* Serial Monitor Section */}
-        <SerialMonitor />
 
 
 
