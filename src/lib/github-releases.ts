@@ -109,6 +109,12 @@ class GitHubReleaseManager {
     const releases = await this.fetchReleasesFromRepo(owner, repo)
     const firmwareList: FirmwareInfo[] = []
 
+    // If no releases, try to fetch .bin files directly from repo
+    if (releases.length === 0) {
+      console.log(`No releases found for ${owner}/${repo}, fetching files directly from repo...`)
+      return await this.getFirmwareFilesFromRepo(owner, repo)
+    }
+
     for (const release of releases) {
       for (const asset of release.assets) {
         // Filter for .bin files
@@ -139,6 +145,42 @@ class GitHubReleaseManager {
       throw new Error(`Download failed: ${response.status}`)
     }
     return await response.arrayBuffer()
+  }
+
+  async getFirmwareFilesFromRepo(owner: string, repo: string): Promise<FirmwareInfo[]> {
+    try {
+      // Fetch contents of the repository root
+      const response = await fetch(`${this.apiBase}/repos/${owner}/${repo}/contents`)
+      if (!response.ok) {
+        console.error(`Failed to fetch repo contents: ${response.status}`)
+        return []
+      }
+
+      const files = await response.json()
+      const firmwareList: FirmwareInfo[] = []
+
+      for (const file of files) {
+        // Filter for .bin files
+        if (file.name && file.name.endsWith('.bin') && file.download_url) {
+          const firmware: FirmwareInfo = {
+            name: file.name,
+            version: 'latest',
+            description: `Firmware from repository: ${file.name}`,
+            downloadUrl: file.download_url,
+            size: file.size || 0,
+            uploadDate: new Date().toISOString(),
+            chipType: this.extractChipType(file.name),
+            compatibility: []
+          }
+          firmwareList.push(firmware)
+        }
+      }
+
+      return firmwareList
+    } catch (error) {
+      console.error(`Error fetching firmware files from ${owner}/${repo}:`, error)
+      return []
+    }
   }
 
   private extractChipType(filename: string): string {
