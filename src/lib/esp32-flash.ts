@@ -30,13 +30,14 @@ export class ESP32FlashTool {
         throw new Error('Không thể lấy được port')
       }
 
-      // Open the port
+      // Open the port with high-speed baud rate for faster flashing
       await this.port.open({
-        baudRate: 115200,
+        baudRate: 921600, // High speed for ESP32-S3 (was 115200)
         dataBits: 8,
         stopBits: 1,
         parity: 'none',
-        flowControl: 'none'
+        flowControl: 'none',
+        bufferSize: 65536 // Large buffer for better performance
       })
 
       // Get reader and writer
@@ -128,8 +129,8 @@ export class ESP32FlashTool {
         message: 'Đang ghi firmware...'
       })
 
-      // Write firmware in chunks
-      const chunkSize = 4096 // 4KB chunks
+      // Write firmware in large chunks for better performance
+      const chunkSize = 65536 // 64KB chunks (was 4KB - much faster!)
       for (let offset = 0; offset < totalSize; offset += chunkSize) {
         const chunk = data.slice(offset, Math.min(offset + chunkSize, totalSize))
         
@@ -141,11 +142,10 @@ export class ESP32FlashTool {
         onProgress?.({
           stage: 'writing',
           progress: writeProgress,
-          message: `Đã ghi ${bytesWritten}/${totalSize} bytes (${(bytesWritten/totalSize*100).toFixed(1)}%)`
+          message: `Đã ghi ${(bytesWritten/1024).toFixed(0)}KB/${(totalSize/1024).toFixed(0)}KB (${(bytesWritten/totalSize*100).toFixed(1)}%)`
         })
 
-        // Small delay to avoid overwhelming the device
-        await new Promise(resolve => setTimeout(resolve, 10))
+        // No delay needed with large chunks - much faster!
       }
 
       // Stage 4: Verify
