@@ -499,41 +499,23 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Variants - Only show ESP32-S3 related variants */}
-                  <div className="p-6">
-                    <h4 className="font-bold text-primary mb-3 text-sm">📱 Phiên bản chip:</h4>
-                    <div className="space-y-2">
-                      {firmware.versions.filter((v: any) => v.chip === selectedChip).map((variant: any) => (
-                        <div key={variant.id} className="border border-primary/20 rounded-lg p-3 hover:bg-accent-lightBlue/30 transition-colors">
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex-1 min-w-0">
-                              <h5 className="font-bold text-primary">{variant.name}</h5>
-                              <p className="text-sm text-primary-dark">{variant.description}</p>
-                            </div>
-                            <div className="flex gap-2 flex-shrink-0">
-                              <button
-                                onClick={() => {
-                                  setSelectedChip(variant.chip)
-                                  setSelectedFirmware(firmware.id)
-                                }}
-                                disabled={!isConnected}
-                                className="bg-accent-blue hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-2 rounded font-medium text-sm transition-colors whitespace-nowrap"
-                              >
-                                Nạp FW
-                              </button>
-                              <a
-                                href={firmware.schematicUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="bg-secondary hover:bg-secondary-dark text-primary px-3 py-2 rounded font-medium text-sm transition-colors whitespace-nowrap"
-                              >
-                                Xem sơ đồ
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                  {/* Action Buttons */}
+                  <div className="p-6 flex gap-3">
+                    <button
+                      onClick={() => setSelectedFirmware(firmware.id)}
+                      disabled={!isConnected}
+                      className="flex-1 bg-accent-blue hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-3 rounded-lg font-medium transition-colors"
+                    >
+                      ⚡ Nạp FW
+                    </button>
+                    <a
+                      href={firmware.schematicUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 bg-secondary hover:bg-secondary-dark text-primary px-4 py-3 rounded-lg font-medium transition-colors text-center"
+                    >
+                      📋 Xem sơ đồ
+                    </a>
                   </div>
                 </div>
               ))}
