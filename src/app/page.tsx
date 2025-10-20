@@ -421,6 +421,26 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Chip Selector Bar */}
+          <div className="mb-8 p-4 bg-gradient-to-r from-primary to-primary-dark rounded-lg shadow-lg border-2 border-primary-dark">
+            <p className="text-white font-bold mb-3 text-sm">📱 Chọn loại chip:</p>
+            <div className="flex flex-wrap gap-2">
+              {CHIPS.map((chip) => (
+                <button
+                  key={chip.id}
+                  onClick={() => setSelectedChip(chip.id)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    selectedChip === chip.id
+                      ? 'bg-white text-primary shadow-lg scale-105'
+                      : 'bg-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  {chip.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Firmware Grid */}
           <div className="grid md:grid-cols-2 gap-8">
             {FIRMWARES.map((firmware) => (
