@@ -20,11 +20,10 @@ export class ESP32FlashTool {
         throw new Error('WebSerial API không được hỗ trợ')
       }
 
-      // Request port access
+      // Request port access - allow all serial devices
+      // Remove filter to show all available serial ports
       this.port = await (navigator as any).serial.requestPort({
-        filters: [
-          { usbVendorId: 0x303a }, // Espressif USB VID
-        ]
+        // No filters - allow user to select any serial port
       })
 
       if (!this.port) {
