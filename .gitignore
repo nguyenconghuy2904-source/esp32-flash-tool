@@ -47,3 +47,4 @@ keys_batch_*.csv
 # OS
 Thumbs.db
 .DS_Store
+robot-otto-firmware/
