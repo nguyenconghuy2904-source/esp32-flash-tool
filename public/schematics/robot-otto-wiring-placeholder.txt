@@ -1,0 +1,27 @@
+# Robot Otto - Sơ Đồ Kết Nối
+
+**Đây là file placeholder. Thay thế bằng PDF thực tế.**
+
+## Các bước để thêm sơ đồ PDF:
+
+1. **Tạo file PDF sơ đồ** của bạn (KiCad, Fritzing, vẽ tay scan, etc.)
+
+2. **Đặt tên file:** `robot-otto-wiring.pdf`
+
+3. **Copy vào folder này:** `public/schematics/`
+
+4. **File sẽ có URL:** `https://minizjp.com/schematics/robot-otto-wiring.pdf`
+
+5. **Nút "📋 Xem sơ đồ"** trên web sẽ tự động mở file PDF này!
+
+## Nội dung nên có trong sơ đồ:
+
+- ✅ Sơ đồ chân kết nối ESP32-S3
+- ✅ Các module/sensor cần kết nối
+- ✅ Màu dây và chân tương ứng
+- ✅ Nguồn điện (5V, 3.3V, GND)
+- ✅ Lưu ý quan trọng (nếu có)
+
+---
+
+**Note:** File này chỉ là hướng dẫn. Xóa file này và thay bằng PDF thực tế của bạn.
