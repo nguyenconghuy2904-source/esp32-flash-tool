@@ -28,6 +28,7 @@ interface FirmwareInfo {
   requiresKey: boolean
   youtubeUrl?: string
   schematicUrl?: string
+  file3dUrl?: string
   version?: string
   versions: Array<{
     id: string
@@ -448,8 +449,8 @@ export default function Home() {
             <div className="grid md:grid-cols-2 gap-8">
               {FIRMWARES.map((firmware) => (
                 <div key={firmware.id} className="bg-white border-2 border-primary/20 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-                  {/* Firmware Image - Like xiaozhi.vn */}
-                  <div className="relative h-48 bg-gray-900 overflow-hidden">
+                  {/* Firmware Image - 1:1 Aspect Ratio */}
+                  <div className="relative w-full aspect-square bg-gray-900 overflow-hidden">
                     {firmware.image ? (
                       <Image 
                         src={firmware.image} 
@@ -493,6 +494,12 @@ export default function Home() {
                           📋 Sơ đồ
                         </a>
                       )}
+                      {firmware.file3dUrl && (
+                        <a href={firmware.file3dUrl} target="_blank" rel="noopener noreferrer"
+                           className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm transition-colors">
+                          🗂️ File 3D
+                        </a>
+                      )}
                     </div>
                   </div>
 
@@ -509,21 +516,35 @@ export default function Home() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="p-6 pt-4 flex gap-3">
+                  <div className="p-6 pt-4">
                     <button
                       onClick={() => handleFirmwareClick(firmware.id)}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors mb-3"
                     >
                       Nạp FW
                     </button>
-                    <a
-                      href={firmware.schematicUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-3 rounded-lg font-medium transition-colors text-center"
-                    >
-                      Xem sơ đồ
-                    </a>
+                    <div className="flex gap-3">
+                      {firmware.schematicUrl && (
+                        <a
+                          href={firmware.schematicUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors text-center text-sm"
+                        >
+                          📋 Sơ đồ
+                        </a>
+                      )}
+                      {firmware.file3dUrl && (
+                        <a
+                          href={firmware.file3dUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors text-center text-sm"
+                        >
+                          🗂️ File 3D
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
