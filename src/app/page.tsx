@@ -68,7 +68,7 @@ const FIRMWARES: FirmwareInfo[] = [
     id: 'robot-otto',
     name: 'Robot Otto',
     description: 'Firmware điều khiển robot Otto với AI và học máy',
-    image: '/images/robot-otto.jpg',
+    image: '/images/robot-otto.png',
     features: [
       '🤖 Điều khiển robot Otto thông minh',
       '🎵 Nhận diện giọng nói và âm thanh',
@@ -95,8 +95,8 @@ const FIRMWARES: FirmwareInfo[] = [
   {
     id: 'dogmaster',
     name: 'Thùng Rác Thông Minh',
-    description: 'Hệ thống quản lý thùng rác tự động, phân loại rác thông minh',
-    image: '/images/smart-trash-bin.jpg',
+    description: 'Hệ thống quản lý thùng rác tự động với AI phân loại rác',
+    image: '/images/smart-trash-bin.png',
     features: [
       '♻️ Phân loại rác tự động AI',
       '🚪 Nắp thùng mở tự động',
@@ -123,7 +123,7 @@ const FIRMWARES: FirmwareInfo[] = [
     id: 'smart-switch-pc',
     name: 'Smart Switch PC',
     description: 'Điều khiển máy tính từ xa thông minh',
-    image: '/images/smart-switch.jpg',
+    image: '/images/chrome_zdtZmuxmqs.png',
     features: [
       '💻 Bật/tắt máy tính từ xa',
       '📊 Monitor nhiệt độ, tải CPU',
@@ -149,7 +149,8 @@ const FIRMWARES: FirmwareInfo[] = [
 ]
 
 export default function Home() {
-  const [selectedChip, setSelectedChip] = useState<ChipType | null>(null)
+  // State management
+  const [selectedChip, setSelectedChip] = useState<ChipType>('esp32-c3-super-mini') // Default to C3
   const [selectedFirmware, setSelectedFirmware] = useState<FirmwareCategory | null>(null)
   const [authKey, setAuthKey] = useState('')
   const [isConnected, setIsConnected] = useState(false)
@@ -162,6 +163,8 @@ export default function Home() {
   const [showYouTubeAd, setShowYouTubeAd] = useState(false)
   const [activeTab, setActiveTab] = useState<'flash' | 'monitor'>('flash')
   const [serialPort, setSerialPort] = useState<SerialPort | null>(null)
+  const [showConnectModal, setShowConnectModal] = useState(false)
+  const [pendingFirmware, setPendingFirmware] = useState<FirmwareCategory | null>(null)
   const flashTool = useRef<ESP32FlashTool>(new ESP32FlashTool())
 
   const selectedChipInfo = CHIPS.find(chip => chip.id === selectedChip)
@@ -202,12 +205,13 @@ export default function Home() {
     }
   }
 
-  const handleConnect = async () => {
-    if (!selectedChip) {
-      setFlashStatus('❌ Vui lòng chọn loại chip trước!')
-      return
-    }
+  // Handle firmware button click - Show connect modal
+  const handleFirmwareClick = (firmwareId: FirmwareCategory) => {
+    setPendingFirmware(firmwareId)
+    setShowConnectModal(true)
+  }
 
+  const handleConnect = async () => {
     // Check WebSerial API support
     if (!('serial' in navigator)) {
       setFlashStatus('❌ Trình duyệt không hỗ trợ WebSerial API. Vui lòng dùng Chrome, Edge, hoặc Opera (không phải Firefox/Safari)')
@@ -230,6 +234,7 @@ export default function Home() {
         setSerialPort(port)
         setIsConnected(true)
         setFlashStatus('✅ Đã kết nối với ESP32!')
+        // Keep modal open to show "Nạp" button
       } else {
         setFlashStatus('❌ Không thể kết nối. Vui lòng thử lại.')
         setIsConnected(false)
@@ -419,59 +424,22 @@ export default function Home() {
             <p className="text-primary-dark text-lg">Chọn chương trình và phiên bản chip bạn muốn nạp</p>
           </div>
           
-          {/* Connection Bar */}
-          <div className="mb-8 p-4 bg-white border-2 border-primary/20 rounded-lg flex items-center justify-between shadow-lg">
-            <div className="flex items-center space-x-3">
-              <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
-              <span className="text-primary font-medium">
-                {isConnected ? '✅ Đã kết nối ESP32' : '🔌 Chưa kết nối'}
-              </span>
-            </div>
-            
-            <div className="flex space-x-2">
-              {!isConnected ? (
-                <button
-                  onClick={handleConnect}
-                  className="bg-accent-blue hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-md"
-                >
-                  🔌 Kết nối thiết bị
-                </button>
-              ) : (
-                <button
-                  onClick={handleDisconnect}
-                  className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-md"
-                >
-                  🔌 Ngắt kết nối
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Chip Selector Bar */}
+          {/* Chip Selector Tabs - Like xiaozhi.vn */}
           <div className="mb-8 flex justify-center">
-            <div className="bg-gradient-to-r from-primary to-primary-dark rounded-xl shadow-lg border-2 border-primary-dark p-6 max-w-2xl w-full">
-              <p className="text-white font-bold mb-4 text-center text-sm">📱 Chọn loại chip:</p>
-              <div className="flex flex-wrap gap-3 justify-center">
-                {CHIPS.map((chip) => (
-                  <button
-                    key={chip.id}
-                    onClick={() => setSelectedChip(chip.id)}
-                    className={`px-6 py-3 rounded-lg font-medium transition-all transform ${
-                      selectedChip === chip.id
-                        ? 'bg-white text-primary shadow-lg scale-105 hover:scale-110'
-                        : 'bg-white/20 text-white hover:bg-white/30'
-                    }`}
-                  >
-                    {chip.name}
-                  </button>
-                ))}
-              </div>
-              {selectedChip === 'esp32-s3-zero' && (
-                <p className="text-white/70 text-xs text-center mt-3">Còn đang phát triển...</p>
-              )}
-              {selectedChip === 'esp32-c3-super-mini' && (
-                <p className="text-white/70 text-xs text-center mt-3">Còn đang phát triển...</p>
-              )}
+            <div className="inline-flex bg-gray-800 rounded-xl p-1 shadow-xl">
+              {CHIPS.map((chip) => (
+                <button
+                  key={chip.id}
+                  onClick={() => setSelectedChip(chip.id)}
+                  className={`px-8 py-3 rounded-lg font-medium transition-all ${
+                    selectedChip === chip.id
+                      ? 'bg-white text-gray-900 shadow-lg'
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  {chip.name}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -480,32 +448,48 @@ export default function Home() {
             <div className="grid md:grid-cols-2 gap-8">
               {FIRMWARES.map((firmware) => (
                 <div key={firmware.id} className="bg-white border-2 border-primary/20 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-                  {/* Firmware Header */}
-                  <div className="bg-gradient-to-r from-primary to-primary-dark p-6 text-white">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="text-2xl font-bold">{firmware.name}</h3>
-                        <p className="text-white/80 text-sm mt-1">{firmware.description}</p>
+                  {/* Firmware Image - Like xiaozhi.vn */}
+                  <div className="relative h-48 bg-gray-900 overflow-hidden">
+                    {firmware.image ? (
+                      <Image 
+                        src={firmware.image} 
+                        alt={firmware.name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/50 text-6xl">
+                        📱
                       </div>
-                      <div className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap ml-4 ${
+                    )}
+                    {/* Badge overlay */}
+                    <div className="absolute top-3 right-3">
+                      <div className={`px-3 py-1 rounded-lg text-sm font-medium backdrop-blur-md ${
                         firmware.requiresKey 
-                          ? 'bg-white/20 text-white' 
+                          ? 'bg-white/20 text-white border border-white/30' 
                           : 'bg-green-500 text-white'
                       }`}>
                         {firmware.requiresKey ? '🔑 Key' : '🆓 Free'}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Firmware Info */}
+                  <div className="p-6">
+                    <h3 className="text-2xl font-bold text-primary mb-2">{firmware.name}</h3>
+                    <p className="text-gray-600 text-sm mb-4">{firmware.description}</p>
                     
-                    <div className="flex gap-2 mt-3">
+                    {/* Quick links */}
+                    <div className="flex gap-2 mb-4">
                       {firmware.youtubeUrl && (
                         <a href={firmware.youtubeUrl} target="_blank" rel="noopener noreferrer"
-                           className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded text-sm transition-colors">
+                           className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm transition-colors">
                           📺 Video
                         </a>
                       )}
                       {firmware.schematicUrl && (
                         <a href={firmware.schematicUrl} target="_blank" rel="noopener noreferrer"
-                           className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded text-sm transition-colors">
+                           className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm transition-colors">
                           📋 Sơ đồ
                         </a>
                       )}
@@ -513,12 +497,11 @@ export default function Home() {
                   </div>
 
                   {/* Firmware Features */}
-                  <div className="p-6 border-b border-primary/10">
-                    <h4 className="font-bold text-primary mb-3 text-sm">✨ Tính năng:</h4>
-                    <div className="grid grid-cols-2 gap-2">
+                  <div className="px-6 pb-4 border-t border-gray-100 pt-4">
+                    <div className="space-y-2">
                       {firmware.features.slice(0, 4).map((feature, idx) => (
-                        <div key={idx} className="text-sm text-primary-dark flex items-start">
-                          <span className="mr-2">✓</span>
+                        <div key={idx} className="text-sm text-gray-700 flex items-start">
+                          <span className="text-green-500 mr-2">✓</span>
                           <span>{feature}</span>
                         </div>
                       ))}
@@ -526,21 +509,20 @@ export default function Home() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="p-6 flex gap-3">
+                  <div className="p-6 pt-4 flex gap-3">
                     <button
-                      onClick={() => setSelectedFirmware(firmware.id)}
-                      disabled={!isConnected}
-                      className="flex-1 bg-accent-blue hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-3 rounded-lg font-medium transition-colors"
+                      onClick={() => handleFirmwareClick(firmware.id)}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
                     >
-                      ⚡ Nạp FW
+                      Nạp FW
                     </button>
                     <a
                       href={firmware.schematicUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 bg-secondary hover:bg-secondary-dark text-primary px-4 py-3 rounded-lg font-medium transition-colors text-center"
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-3 rounded-lg font-medium transition-colors text-center"
                     >
-                      📋 Xem sơ đồ
+                      Xem sơ đồ
                     </a>
                   </div>
                 </div>
@@ -942,6 +924,72 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Connection Modal */}
+      {showConnectModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
+            {/* Close button */}
+            <button
+              onClick={() => {
+                setShowConnectModal(false)
+                setPendingFirmware(null)
+                setIsConnected(false)
+                setFlashStatus('')
+              }}
+              className="float-right text-gray-400 hover:text-gray-600 text-2xl font-bold"
+            >
+              ×
+            </button>
+
+            <h3 className="text-2xl font-bold text-primary mb-4">
+              {isConnected ? '✅ Đã kết nối' : '🔌 Kết nối thiết bị'}
+            </h3>
+            
+            {!isConnected ? (
+              <>
+                <p className="text-gray-600 mb-6">
+                  Vui lòng kết nối ESP32 qua USB để tiếp tục nạp firmware
+                </p>
+                
+                <button
+                  onClick={handleConnect}
+                  className="w-full bg-accent-blue hover:bg-blue-700 text-white px-6 py-4 rounded-lg font-bold text-lg transition-colors shadow-lg"
+                >
+                  🔌 Kết nối ESP32
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-green-600 mb-6 font-medium">
+                  ✅ Thiết bị đã sẵn sàng! Bấm nút bên dưới để bắt đầu nạp firmware
+                </p>
+                
+                <button
+                  onClick={async () => {
+                    setSelectedFirmware(pendingFirmware)
+                    setShowConnectModal(false)
+                    // handleFlash will be triggered by useEffect
+                  }}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white px-6 py-4 rounded-lg font-bold text-lg transition-colors shadow-lg animate-pulse"
+                >
+                  ⚡ Nạp Firmware
+                </button>
+              </>
+            )}
+
+            {flashStatus && (
+              <div className={`mt-4 p-3 rounded-lg text-sm ${
+                flashStatus.includes('✅') ? 'bg-green-50 text-green-800' :
+                flashStatus.includes('❌') ? 'bg-red-50 text-red-800' :
+                'bg-blue-50 text-blue-800'
+              }`}>
+                {flashStatus}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
