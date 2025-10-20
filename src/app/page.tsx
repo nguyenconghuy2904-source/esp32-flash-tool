@@ -93,29 +93,29 @@ const FIRMWARES: FirmwareInfo[] = [
   },
   {
     id: 'dogmaster',
-    name: 'DogMaster',
-    description: 'Hệ thống huấn luyện và quản lý thú cưng thông minh',
-    image: '/images/dogmaster.jpg',
+    name: 'Thùng Rác Thông Minh',
+    description: 'Hệ thống quản lý thùng rác tự động, phân loại rác thông minh',
+    image: '/images/smart-trash-bin.jpg',
     features: [
-      '🐕 Theo dõi hoạt động thú cưng 24/7',
-      '🍽️ Tự động cho ăn theo lịch trình',
-      '🔊 Phát âm thanh huấn luyện',
-      '📊 Báo cáo sức khỏe chi tiết',
-      '📱 Thông báo realtime lên app',
-      '🎥 Ghi hình và livestream'
+      '♻️ Phân loại rác tự động AI',
+      '🚪 Nắp thùng mở tự động',
+      '� Theo dõi mức đầy rác',
+      '� Thông báo khi đầy',
+      '📱 Ứng dụng điều khiển từ xa',
+      '� Tích hợp IoT thông minh'
     ],
     requiresKey: true,
-    youtubeUrl: 'https://youtube.com/watch?v=demo-dogmaster',
-    schematicUrl: '/schematics/dogmaster-setup.pdf',
+    youtubeUrl: 'https://youtube.com/watch?v=demo-smart-trash',
+    schematicUrl: '/schematics/smart-trash-bin-setup.pdf',
     version: 'v1.8.2',
     versions: [
-      { id: 'dog-s3', name: 'ESP32-S3', description: 'Version đầy đủ tính năng', chip: 'esp32-s3', requiresKey: true },
-      { id: 'dog-c3', name: 'ESP32-C3 Super Mini', description: 'Version giá rẻ', chip: 'esp32-c3-super-mini', requiresKey: true }
+      { id: 'trash-s3', name: 'ESP32-S3', description: 'Version đầy đủ AI', chip: 'esp32-s3', requiresKey: true },
+      { id: 'trash-c3', name: 'ESP32-C3 Super Mini', description: 'Version tiêu chuẩn', chip: 'esp32-c3-super-mini', requiresKey: true }
     ],
     notes: [
-      '✔️ Kết nối với camera IP và cảm biến',
-      '✔️ Tích hợp AI nhận diện hành vi',
-      '⚠️ Cần key để unlock tính năng premium'
+      '✔️ Kết nối cảm biến cân tải, camera AI',
+      '✔️ Tích hợp ML nhận diện loại rác',
+      '⚠️ Cần key để unlock tính năng AI'
     ]
   },
   {
