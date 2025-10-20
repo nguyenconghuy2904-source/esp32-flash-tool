@@ -81,6 +81,7 @@ const FIRMWARES: FirmwareInfo[] = [
     requiresKey: false,
     youtubeUrl: 'https://youtube.com/watch?v=demo-otto',
     schematicUrl: '/schematics/robot-otto-wiring.pdf',
+    file3dUrl: '/3d-files/robot-otto.zip',
     version: 'v2.1.5',
     versions: [
       { id: 'otto-s3', name: 'ESP32-S3', description: 'Version cao cấp với camera', chip: 'esp32-s3', requiresKey: false },
@@ -109,6 +110,7 @@ const FIRMWARES: FirmwareInfo[] = [
     requiresKey: true,
     youtubeUrl: 'https://youtube.com/watch?v=demo-smart-trash',
     schematicUrl: '/schematics/smart-trash-bin-setup.pdf',
+    file3dUrl: '/3d-files/smart-trash-bin.zip',
     version: 'v1.8.2',
     versions: [
       { id: 'trash-s3', name: 'ESP32-S3', description: 'Version đầy đủ AI', chip: 'esp32-s3', requiresKey: true },
@@ -136,6 +138,7 @@ const FIRMWARES: FirmwareInfo[] = [
     requiresKey: false,
     youtubeUrl: 'https://youtube.com/watch?v=demo-smart-switch',
     schematicUrl: '/schematics/smart-switch-wiring.pdf',
+    file3dUrl: '/3d-files/smart-switch-pc.zip',
     version: 'v3.0.1',
     versions: [
       { id: 'switch-s3', name: 'ESP32-S3', description: 'Version đầy đủ', chip: 'esp32-s3', requiresKey: false },
