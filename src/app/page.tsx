@@ -422,113 +422,128 @@ export default function Home() {
           </div>
 
           {/* Chip Selector Bar */}
-          <div className="mb-8 p-4 bg-gradient-to-r from-primary to-primary-dark rounded-lg shadow-lg border-2 border-primary-dark">
-            <p className="text-white font-bold mb-3 text-sm">📱 Chọn loại chip:</p>
-            <div className="flex flex-wrap gap-2">
-              {CHIPS.map((chip) => (
-                <button
-                  key={chip.id}
-                  onClick={() => setSelectedChip(chip.id)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    selectedChip === chip.id
-                      ? 'bg-white text-primary shadow-lg scale-105'
-                      : 'bg-white/20 text-white hover:bg-white/30'
-                  }`}
-                >
-                  {chip.name}
-                </button>
-              ))}
+          <div className="mb-8 flex justify-center">
+            <div className="bg-gradient-to-r from-primary to-primary-dark rounded-xl shadow-lg border-2 border-primary-dark p-6 max-w-2xl w-full">
+              <p className="text-white font-bold mb-4 text-center text-sm">📱 Chọn loại chip:</p>
+              <div className="flex flex-wrap gap-3 justify-center">
+                {CHIPS.map((chip) => (
+                  <button
+                    key={chip.id}
+                    onClick={() => setSelectedChip(chip.id)}
+                    className={`px-6 py-3 rounded-lg font-medium transition-all transform ${
+                      selectedChip === chip.id
+                        ? 'bg-white text-primary shadow-lg scale-105 hover:scale-110'
+                        : 'bg-white/20 text-white hover:bg-white/30'
+                    }`}
+                  >
+                    {chip.name}
+                  </button>
+                ))}
+              </div>
+              {selectedChip === 'esp32-s3-zero' && (
+                <p className="text-white/70 text-xs text-center mt-3">Còn đang phát triển...</p>
+              )}
+              {selectedChip === 'esp32-c3-super-mini' && (
+                <p className="text-white/70 text-xs text-center mt-3">Còn đang phát triển...</p>
+              )}
             </div>
           </div>
 
           {/* Firmware Grid */}
-          <div className="grid md:grid-cols-2 gap-8">
-            {FIRMWARES.map((firmware) => (
-              <div key={firmware.id} className="bg-white border-2 border-primary/20 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-                {/* Firmware Header */}
-                <div className="bg-gradient-to-r from-primary to-primary-dark p-6 text-white">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 className="text-2xl font-bold">{firmware.name}</h3>
-                      <p className="text-white/80 text-sm mt-1">{firmware.description}</p>
-                    </div>
-                    <div className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap ml-4 ${
-                      firmware.requiresKey 
-                        ? 'bg-white/20 text-white' 
-                        : 'bg-green-500 text-white'
-                    }`}>
-                      {firmware.requiresKey ? '🔑 Key' : '🆓 Free'}
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2 mt-3">
-                    {firmware.youtubeUrl && (
-                      <a href={firmware.youtubeUrl} target="_blank" rel="noopener noreferrer"
-                         className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded text-sm transition-colors">
-                        📺 Video
-                      </a>
-                    )}
-                    {firmware.schematicUrl && (
-                      <a href={firmware.schematicUrl} target="_blank" rel="noopener noreferrer"
-                         className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded text-sm transition-colors">
-                        📋 Sơ đồ
-                      </a>
-                    )}
-                  </div>
-                </div>
-
-                {/* Firmware Features */}
-                <div className="p-6 border-b border-primary/10">
-                  <h4 className="font-bold text-primary mb-3 text-sm">✨ Tính năng:</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    {firmware.features.slice(0, 4).map((feature, idx) => (
-                      <div key={idx} className="text-sm text-primary-dark flex items-start">
-                        <span className="mr-2">✓</span>
-                        <span>{feature}</span>
+          {selectedChip === 'esp32-s3' ? (
+            <div className="grid md:grid-cols-2 gap-8">
+              {FIRMWARES.map((firmware) => (
+                <div key={firmware.id} className="bg-white border-2 border-primary/20 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                  {/* Firmware Header */}
+                  <div className="bg-gradient-to-r from-primary to-primary-dark p-6 text-white">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 className="text-2xl font-bold">{firmware.name}</h3>
+                        <p className="text-white/80 text-sm mt-1">{firmware.description}</p>
                       </div>
-                    ))}
+                      <div className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap ml-4 ${
+                        firmware.requiresKey 
+                          ? 'bg-white/20 text-white' 
+                          : 'bg-green-500 text-white'
+                      }`}>
+                        {firmware.requiresKey ? '🔑 Key' : '🆓 Free'}
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2 mt-3">
+                      {firmware.youtubeUrl && (
+                        <a href={firmware.youtubeUrl} target="_blank" rel="noopener noreferrer"
+                           className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded text-sm transition-colors">
+                          📺 Video
+                        </a>
+                      )}
+                      {firmware.schematicUrl && (
+                        <a href={firmware.schematicUrl} target="_blank" rel="noopener noreferrer"
+                           className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded text-sm transition-colors">
+                          📋 Sơ đồ
+                        </a>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Variants */}
-                <div className="p-6">
-                  <h4 className="font-bold text-primary mb-3 text-sm">📱 Phiên bản chip:</h4>
-                  <div className="space-y-2">
-                    {firmware.versions.map((variant) => (
-                      <div key={variant.id} className="border border-primary/20 rounded-lg p-3 hover:bg-accent-lightBlue/30 transition-colors">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <h5 className="font-bold text-primary">{variant.name}</h5>
-                            <p className="text-sm text-primary-dark">{variant.description}</p>
-                          </div>
-                          <div className="flex gap-2 flex-shrink-0">
-                            <button
-                              onClick={() => {
-                                setSelectedChip(variant.chip)
-                                setSelectedFirmware(firmware.id)
-                              }}
-                              disabled={!isConnected}
-                              className="bg-accent-blue hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-2 rounded font-medium text-sm transition-colors whitespace-nowrap"
-                            >
-                              Nạp FW
-                            </button>
-                            <a
-                              href={firmware.schematicUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="bg-secondary hover:bg-secondary-dark text-primary px-3 py-2 rounded font-medium text-sm transition-colors whitespace-nowrap"
-                            >
-                              Xem sơ đồ
-                            </a>
+                  {/* Firmware Features */}
+                  <div className="p-6 border-b border-primary/10">
+                    <h4 className="font-bold text-primary mb-3 text-sm">✨ Tính năng:</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {firmware.features.slice(0, 4).map((feature, idx) => (
+                        <div key={idx} className="text-sm text-primary-dark flex items-start">
+                          <span className="mr-2">✓</span>
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Variants - Only show ESP32-S3 related variants */}
+                  <div className="p-6">
+                    <h4 className="font-bold text-primary mb-3 text-sm">📱 Phiên bản chip:</h4>
+                    <div className="space-y-2">
+                      {firmware.versions.filter((v: any) => v.chip === selectedChip).map((variant: any) => (
+                        <div key={variant.id} className="border border-primary/20 rounded-lg p-3 hover:bg-accent-lightBlue/30 transition-colors">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <h5 className="font-bold text-primary">{variant.name}</h5>
+                              <p className="text-sm text-primary-dark">{variant.description}</p>
+                            </div>
+                            <div className="flex gap-2 flex-shrink-0">
+                              <button
+                                onClick={() => {
+                                  setSelectedChip(variant.chip)
+                                  setSelectedFirmware(firmware.id)
+                                }}
+                                disabled={!isConnected}
+                                className="bg-accent-blue hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-2 rounded font-medium text-sm transition-colors whitespace-nowrap"
+                              >
+                                Nạp FW
+                              </button>
+                              <a
+                                href={firmware.schematicUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-secondary hover:bg-secondary-dark text-primary px-3 py-2 rounded font-medium text-sm transition-colors whitespace-nowrap"
+                              >
+                                Xem sơ đồ
+                              </a>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
+              <p className="text-yellow-800 font-bold text-lg">📦 Chip này còn đang phát triển</p>
+              <p className="text-yellow-700 text-sm mt-2">Vui lòng quay lại sau</p>
+            </div>
+          )}
         </section>
 
         {/* Step 3: Key Authentication */}
