@@ -293,22 +293,44 @@ export default function Home() {
 
       // Get firmware from the specific firmware repository
       const firmwareList = await githubReleaseManager.getFirmwareListFromRepo(repoConfig.owner, repoConfig.repo)
+      
+      // Debug log
+      console.log('Firmware list:', firmwareList)
+      console.log('Selected chip:', selectedChip)
+      
       const firmwarePattern = `${selectedChip}`
       const firmware = firmwareList.find(fw => fw.name.toLowerCase().includes(firmwarePattern.toLowerCase()))
 
       if (!firmware) {
-        setFlashStatus('❌ Không tìm thấy firmware phù hợp với chip này!')
+        setFlashStatus(`❌ Không tìm thấy firmware phù hợp! (Tìm: ${firmwarePattern}, Có: ${firmwareList.map(f => f.name).join(', ')})`)
+        console.error('Available firmware:', firmwareList)
         return
       }
+      
+      console.log('Selected firmware:', firmware)
 
       setFlashStatus('⬇️ Đang tải firmware...')
       
-      // Download firmware
-      const response = await fetch(firmware.downloadUrl)
-      if (!response.ok) {
-        throw new Error('Không thể tải firmware')
-      }
-      const firmwareData = await response.arrayBuffer()
+      // Download firmware using XMLHttpRequest for better compatibility
+      const firmwareData = await new Promise<ArrayBuffer>((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open('GET', firmware.downloadUrl, true)
+        xhr.responseType = 'arraybuffer'
+        
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            resolve(xhr.response)
+          } else {
+            reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`))
+          }
+        }
+        
+        xhr.onerror = function() {
+          reject(new Error('Network error occurred'))
+        }
+        
+        xhr.send()
+      })
       
       setFlashStatus('🔄 Đang flash firmware...')
       

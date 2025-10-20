@@ -141,11 +141,37 @@ class GitHubReleaseManager {
   }
 
   async downloadFirmware(downloadUrl: string): Promise<ArrayBuffer> {
-    const response = await fetch(downloadUrl)
-    if (!response.ok) {
-      throw new Error(`Download failed: ${response.status}`)
+    try {
+      // Try direct download first with proper headers
+      const response = await fetch(downloadUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/octet-stream',
+        },
+        mode: 'cors',
+        cache: 'no-cache',
+        redirect: 'follow'
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status}`)
+      }
+      
+      return await response.arrayBuffer()
+    } catch (error) {
+      console.error('Direct download failed, trying alternative method:', error)
+      
+      // Fallback: Try without specific headers
+      const response = await fetch(downloadUrl, {
+        mode: 'no-cors'
+      })
+      
+      if (!response.ok && response.type !== 'opaque') {
+        throw new Error(`Download failed: ${response.status}`)
+      }
+      
+      return await response.arrayBuffer()
     }
-    return await response.arrayBuffer()
   }
 
   private extractChipType(filename: string): string {
