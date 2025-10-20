@@ -311,26 +311,22 @@ export default function Home() {
 
       setFlashStatus('⬇️ Đang tải firmware...')
       
-      // Download firmware using XMLHttpRequest for better compatibility
-      const firmwareData = await new Promise<ArrayBuffer>((resolve, reject) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open('GET', firmware.downloadUrl, true)
-        xhr.responseType = 'arraybuffer'
-        
-        xhr.onload = function() {
-          if (xhr.status === 200) {
-            resolve(xhr.response)
-          } else {
-            reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`))
-          }
-        }
-        
-        xhr.onerror = function() {
-          reject(new Error('Network error occurred'))
-        }
-        
-        xhr.send()
+      // Use Cloudflare Worker proxy to bypass CORS
+      const proxyUrl = `https://firmware-proxy.minizjp.workers.dev?url=${encodeURIComponent(firmware.downloadUrl)}`
+      
+      const response = await fetch(proxyUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/octet-stream',
+        },
       })
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Không thể tải firmware: ${errorText}`)
+      }
+      
+      const firmwareData = await response.arrayBuffer()
       
       setFlashStatus('🔄 Đang flash firmware...')
       
