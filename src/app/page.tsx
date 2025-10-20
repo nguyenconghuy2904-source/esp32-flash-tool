@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { validateKeyWithDevice, generateDeviceFingerprint } from '@/lib/api-client'
 import { ESP32FlashTool, FlashProgress } from '@/lib/esp32-flash'
 import { githubReleaseManager, FirmwareInfo as GithubFirmwareInfo } from '@/lib/github-releases'
+import { FIRMWARE_REPOS, getFirmwareRepoConfig } from '@/lib/firmware-config'
 
 type ChipType = 'esp32-s3' | 'esp32-s3-zero' | 'esp32-c3-super-mini'
 type FirmwareCategory = 'robot-otto' | 'dogmaster' | 'smart-switch-pc'
@@ -283,17 +284,24 @@ export default function Home() {
     try {
       setFlashStatus('📥 Đang tải firmware...')
       
-      // Get firmware from GitHub releases  
-      const firmwareList = await githubReleaseManager.getFirmwareList()
-      const firmwarePattern = `${selectedChip}-${selectedFirmware}`
-      const firmware = firmwareList.find(fw => fw.name.includes(firmwarePattern))
-
-      if (!firmware) {
-        setFlashStatus('❌ Không tìm thấy firmware phù hợp!')
+      // Get firmware repo config for selected firmware
+      const repoConfig = getFirmwareRepoConfig(selectedFirmware)
+      if (!repoConfig) {
+        setFlashStatus('❌ Không tìm thấy cấu hình firmware!')
         return
       }
 
-      setFlashStatus('� Đang tải firmware...')
+      // Get firmware from the specific firmware repository
+      const firmwareList = await githubReleaseManager.getFirmwareListFromRepo(repoConfig.owner, repoConfig.repo)
+      const firmwarePattern = `${selectedChip}`
+      const firmware = firmwareList.find(fw => fw.name.toLowerCase().includes(firmwarePattern.toLowerCase()))
+
+      if (!firmware) {
+        setFlashStatus('❌ Không tìm thấy firmware phù hợp với chip này!')
+        return
+      }
+
+      setFlashStatus('⬇️ Đang tải firmware...')
       
       // Download firmware
       const response = await fetch(firmware.downloadUrl)
@@ -302,7 +310,7 @@ export default function Home() {
       }
       const firmwareData = await response.arrayBuffer()
       
-      setFlashStatus('�🔄 Đang flash firmware...')
+      setFlashStatus('🔄 Đang flash firmware...')
       
       await flashTool.current.flashFirmware(
         firmwareData,

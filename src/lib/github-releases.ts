@@ -33,6 +33,7 @@ class GitHubReleaseManager {
   private owner: string
   private repo: string
   private apiBase: string = 'https://api.github.com'
+  private releaseCache: Map<string, GitHubRelease[]> = new Map()
 
   constructor(repository?: string) {
     const repoPath = repository || process.env.NEXT_PUBLIC_GITHUB_REPO || 'user/esp32-flash-tool'
@@ -54,8 +55,58 @@ class GitHubReleaseManager {
     }
   }
 
+  async fetchReleasesFromRepo(owner: string, repo: string): Promise<GitHubRelease[]> {
+    const cacheKey = `${owner}/${repo}`
+    
+    // Check cache first
+    if (this.releaseCache.has(cacheKey)) {
+      return this.releaseCache.get(cacheKey) || []
+    }
+
+    try {
+      const response = await fetch(`${this.apiBase}/repos/${owner}/${repo}/releases`)
+      if (!response.ok) {
+        throw new Error(`GitHub API error: ${response.status}`)
+      }
+      const data = await response.json()
+      this.releaseCache.set(cacheKey, data)
+      return data
+    } catch (error) {
+      console.error(`Error fetching releases from ${owner}/${repo}:`, error)
+      return []
+    }
+  }
+
   async getFirmwareList(): Promise<FirmwareInfo[]> {
     const releases = await this.fetchReleases()
+    const firmwareList: FirmwareInfo[] = []
+
+    for (const release of releases) {
+      for (const asset of release.assets) {
+        // Filter for .bin files
+        if (asset.name.endsWith('.bin')) {
+          const firmware: FirmwareInfo = {
+            name: asset.name,
+            version: release.tag_name,
+            description: release.body || release.name,
+            downloadUrl: asset.browser_download_url,
+            size: asset.size,
+            uploadDate: release.published_at || release.created_at,
+            chipType: this.extractChipType(asset.name),
+            compatibility: this.extractCompatibility(release.body)
+          }
+          firmwareList.push(firmware)
+        }
+      }
+    }
+
+    return firmwareList.sort((a, b) => 
+      new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
+    )
+  }
+
+  async getFirmwareListFromRepo(owner: string, repo: string): Promise<FirmwareInfo[]> {
+    const releases = await this.fetchReleasesFromRepo(owner, repo)
     const firmwareList: FirmwareInfo[] = []
 
     for (const release of releases) {
