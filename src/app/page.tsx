@@ -449,9 +449,9 @@ export default function Home() {
 
           {/* Firmware Grid */}
           {selectedChip === 'esp32-s3' ? (
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {FIRMWARES.map((firmware) => (
-                <div key={firmware.id} className="bg-white border-2 border-primary/20 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                <div key={firmware.id} className="bg-white border-2 border-primary/20 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
                   {/* Firmware Image - 1:1 Aspect Ratio */}
                   <div className="relative w-full aspect-square bg-gray-900 overflow-hidden">
                     {firmware.image ? (
@@ -462,79 +462,79 @@ export default function Home() {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/50 text-6xl">
+                      <div className="w-full h-full flex items-center justify-center text-white/50 text-4xl">
                         📱
                       </div>
                     )}
                     {/* Badge overlay */}
-                    <div className="absolute top-3 right-3">
-                      <div className={`px-3 py-1 rounded-lg text-sm font-medium backdrop-blur-md ${
+                    <div className="absolute top-2 right-2">
+                      <div className={`px-2 py-1 rounded text-xs font-medium backdrop-blur-md ${
                         firmware.requiresKey 
                           ? 'bg-white/20 text-white border border-white/30' 
                           : 'bg-green-500 text-white'
                       }`}>
-                        {firmware.requiresKey ? '🔑 Key' : '🆓 Free'}
+                        {firmware.requiresKey ? '🔑' : '🆓'}
                       </div>
                     </div>
                   </div>
 
                   {/* Firmware Info */}
-                  <div className="p-6">
-                    <h3 className="text-2xl font-bold text-primary mb-2">{firmware.name}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{firmware.description}</p>
+                  <div className="p-3">
+                    <h3 className="text-base font-bold text-primary mb-1">{firmware.name}</h3>
+                    <p className="text-gray-600 text-xs mb-2 line-clamp-2">{firmware.description}</p>
                     
                     {/* Quick links */}
-                    <div className="flex gap-2 mb-4">
+                    <div className="flex gap-1 mb-2 flex-wrap">
                       {firmware.youtubeUrl && (
                         <a href={firmware.youtubeUrl} target="_blank" rel="noopener noreferrer"
-                           className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm transition-colors">
-                          📺 Video
+                           className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-0.5 rounded text-xs transition-colors">
+                          📺
                         </a>
                       )}
                       {firmware.schematicUrl && (
                         <a href={firmware.schematicUrl} target="_blank" rel="noopener noreferrer"
-                           className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm transition-colors">
-                          📋 Sơ đồ
+                           className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-0.5 rounded text-xs transition-colors">
+                          📋
                         </a>
                       )}
                       {firmware.file3dUrl && (
                         <a href={firmware.file3dUrl} target="_blank" rel="noopener noreferrer"
-                           className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm transition-colors">
-                          🗂️ File 3D
+                           className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-0.5 rounded text-xs transition-colors">
+                          🗂️
                         </a>
                       )}
                     </div>
                   </div>
 
-                  {/* Firmware Features */}
-                  <div className="px-6 pb-4 border-t border-gray-100 pt-4">
-                    <div className="space-y-2">
-                      {firmware.features.slice(0, 4).map((feature, idx) => (
-                        <div key={idx} className="text-sm text-gray-700 flex items-start">
-                          <span className="text-green-500 mr-2">✓</span>
-                          <span>{feature}</span>
+                  {/* Firmware Features - Compact */}
+                  <div className="px-3 pb-2 border-t border-gray-100 pt-2">
+                    <div className="space-y-1">
+                      {firmware.features.slice(0, 3).map((feature, idx) => (
+                        <div key={idx} className="text-xs text-gray-700 flex items-start">
+                          <span className="text-green-500 mr-1 text-xs">✓</span>
+                          <span className="line-clamp-1">{feature}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="p-6 pt-4">
+                  <div className="p-3 pt-2">
                     <button
                       onClick={() => handleFirmwareClick(firmware.id)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors mb-3"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors mb-2"
                     >
                       Nạp FW
                     </button>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2">
                       {firmware.schematicUrl && (
                         <a
                           href={firmware.schematicUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors text-center text-sm"
+                          className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-2 py-1.5 rounded text-center text-xs font-medium transition-colors"
                         >
-                          📋 Sơ đồ
+                          📋
                         </a>
                       )}
                       {firmware.file3dUrl && (
@@ -542,9 +542,9 @@ export default function Home() {
                           href={firmware.file3dUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors text-center text-sm"
+                          className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-2 py-1.5 rounded text-center text-xs font-medium transition-colors"
                         >
-                          🗂️ File 3D
+                          🗂️
                         </a>
                       )}
                     </div>
