@@ -147,37 +147,16 @@ export default {
           return errorResponse('Key không tồn tại trong hệ thống', 401)
         }
 
-        // Check if key allows multiple devices (test keys)
-        const allowMultiple = keyRecord.allow_multiple_devices === 1
-        const currentUses = keyRecord.current_uses || 0
-        const maxUses = keyRecord.max_uses || 1
-
-        if (!allowMultiple) {
-          // Standard key - check if already used with different device
-          if (keyRecord.is_used && keyRecord.device_id !== deviceId) {
-            await incrementFailedAttempt(env, ip)
-            return errorResponse('Key này đã được sử dụng với thiết bị khác', 403)
-          }
-        } else {
-          // Test key - check if max uses exceeded
-          if (currentUses >= maxUses) {
-            await incrementFailedAttempt(env, ip)
-            return errorResponse('Key này đã hết lượt sử dụng', 403)
-          }
+        // Check if key is already used with different device
+        if (keyRecord.is_used && keyRecord.device_id !== deviceId) {
+          await incrementFailedAttempt(env, ip)
+          return errorResponse('Key này đã được sử dụng với thiết bị khác', 403)
         }
 
-        // Mark key as used and increment usage counter
-        if (allowMultiple) {
-          // Test key - increment usage count
-          await env.DB.prepare(
-            'UPDATE auth_keys SET current_uses = current_uses + 1, used_at = datetime("now") WHERE key_hash = ?'
-          ).bind(key).run()
-        } else {
-          // Standard key - mark as used with specific device
-          await env.DB.prepare(
-            'UPDATE auth_keys SET is_used = 1, device_id = ?, used_at = datetime("now") WHERE key_hash = ?'
-          ).bind(deviceId, key).run()
-        }
+        // Mark key as used
+        await env.DB.prepare(
+          'UPDATE auth_keys SET is_used = 1, device_id = ?, used_at = datetime("now") WHERE key_hash = ?'
+        ).bind(deviceId, key).run()
 
         // Log usage for analytics
         await env.DB.prepare(
