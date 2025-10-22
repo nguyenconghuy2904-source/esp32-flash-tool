@@ -3,7 +3,41 @@
 ## Tổng quan
 ESP32 Flash Tool sử dụng hệ thống key **9 chữ số** để xác thực firmware có yêu cầu key.
 
-## Format Key
+Hệ thống hỗ trợ 2 loại key:
+1. **Key thường** - Một key chỉ dùng cho 1 thiết bị
+2. **Test key** - Dùng được cho nhiều thiết bị (không giới hạn)
+
+## 🧪 Test Keys (5 key unlimited)
+
+### Danh sách Test Keys:
+```
+111111111 - Test Key 1 (Unlimited use, multiple devices)
+222222222 - Test Key 2 (Unlimited use, multiple devices)
+333333333 - Test Key 3 (Unlimited use, multiple devices)
+444444444 - Test Key 4 (Unlimited use, multiple devices)
+555555555 - Test Key 5 (Unlimited use, multiple devices)
+```
+
+### Đặc điểm Test Keys:
+- ✅ **Dùng được nhiều chip** - Không giới hạn số thiết bị
+- ✅ **999,999 lượt sử dụng** - Không giới hạn thực tế
+- ✅ **Không bind device** - Không ràng buộc với device ID
+- ✅ **Cho demo/test** - Chia sẻ cho khách hàng test
+- ✅ **Bypass device check** - Không check thiết bị đã sử dụng
+
+### Cài đặt Test Keys:
+```powershell
+.\scripts\add-test-keys.ps1
+```
+
+Hoặc chạy migration thủ công:
+```bash
+cd cloudflare-workers
+wrangler d1 execute esp32-flash-db --file=./migrations/0004_add_test_keys.sql
+wrangler deploy
+```
+
+## Format Key Thường
 - **Định dạng**: 9 chữ số (0-9)
 - **Ví dụ**: `123456789`, `987654321`, `555123456`
 - **Đặc điểm**: Mỗi key chỉ có thể sử dụng với 1 thiết bị duy nhất
