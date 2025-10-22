@@ -137,7 +137,7 @@ const FIRMWARES: FirmwareInfo[] = [
     requiresKey: false,
     youtubeUrl: 'https://youtube.com/watch?v=demo-otto',
     schematicUrl: '/schematics/robot-otto-wiring.pdf',
-    file3dUrl: '/3d-files/robot-otto.zip',
+    file3dUrl: 'https://github.com/nguyenconghuy2904-source/robot-otto-firmware/releases/download/v1.0.0/robot-otto-3d-files.zip',
     version: 'v2.1.5',
     versions: [
       { id: 'otto-s3', name: 'ESP32-S3', description: 'Version cao cấp với camera', chip: 'esp32-s3', requiresKey: false },
