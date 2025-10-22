@@ -43,6 +43,8 @@ cloudflare-workers/dist/
 # keys and sensitive data
 keys_batch_*.sql
 keys_batch_*.csv
+keys/
+!keys/README.md
 
 # OS
 Thumbs.db
