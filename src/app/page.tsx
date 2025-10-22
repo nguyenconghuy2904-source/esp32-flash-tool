@@ -341,13 +341,16 @@ export default function Home() {
     }
   }
 
-  const handleFlash = async () => {
-    if (!selectedChip || !selectedFirmware) {
+  const handleFlash = async (firmwareOverride?: FirmwareCategory) => {
+    const targetFirmware = firmwareOverride || selectedFirmware
+    const targetFirmwareInfo = FIRMWARES.find(fw => fw.id === targetFirmware)
+    
+    if (!selectedChip || !targetFirmware) {
       setFlashStatus('❌ Vui lòng chọn chip và firmware!')
       return
     }
 
-    if (selectedFirmwareInfo?.requiresKey && !keyValidated) {
+    if (targetFirmwareInfo?.requiresKey && !keyValidated) {
       setFlashStatus('❌ Firmware này yêu cầu key hợp lệ!')
       return
     }
@@ -360,8 +363,8 @@ export default function Home() {
     try {
       setFlashStatus('📥 Đang tải firmware...')
       
-      // Get firmware repo config for selected firmware
-      const repoConfig = getFirmwareRepoConfig(selectedFirmware)
+      // Get firmware repo config for target firmware
+      const repoConfig = getFirmwareRepoConfig(targetFirmware)
       if (!repoConfig) {
         setFlashStatus('❌ Không tìm thấy cấu hình firmware!')
         return
@@ -731,7 +734,7 @@ export default function Home() {
                   )}
                   
                   <button
-                    onClick={handleFlash}
+                    onClick={() => handleFlash()}
                     disabled={!isConnected || flashProgress !== null}
                     className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-white border-2 border-primary-dark rounded-lg px-6 py-4 font-medium transition-colors shadow-md mb-4"
                   >
@@ -1065,9 +1068,13 @@ export default function Home() {
                 
                 <button
                   onClick={async () => {
-                    setSelectedFirmware(pendingFirmware)
-                    setShowConnectModal(false)
-                    // handleFlash will be triggered by useEffect
+                    // Close modal and flash with current firmware
+                    if (pendingFirmware) {
+                      setSelectedFirmware(pendingFirmware)
+                      setShowConnectModal(false)
+                      // Flash with explicit firmware parameter
+                      await handleFlash(pendingFirmware)
+                    }
                   }}
                   className="w-full bg-green-500 hover:bg-green-600 text-white px-6 py-4 rounded-lg font-bold text-lg transition-colors shadow-lg animate-pulse"
                 >
