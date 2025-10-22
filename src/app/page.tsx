@@ -9,7 +9,7 @@ import { githubReleaseManager, FirmwareInfo as GithubFirmwareInfo } from '@/lib/
 import { FIRMWARE_REPOS, getFirmwareRepoConfig } from '@/lib/firmware-config'
 
 type ChipType = 'esp32-s3' | 'esp32-s3-zero' | 'esp32-c3-super-mini'
-type FirmwareCategory = 'kiki-day' | 'robot-otto' | 'dogmaster' | 'smart-switch-pc'
+type FirmwareCategory = 'kiki-day' | 'robot-otto' | 'dogmaster' // | 'smart-switch-pc' - Tạm ẩn
 
 interface ChipInfo {
   id: ChipType
@@ -92,6 +92,35 @@ const FIRMWARES: FirmwareInfo[] = [
       '✔️ Liên hệ Zalo 0389827643 để nhận key'
     ]
   },
+  // Tạm ẩn Smart Switch PC - đang cập nhật
+  // {
+  //   id: 'smart-switch-pc',
+  //   name: 'Smart Switch PC',
+  //   description: 'Điều khiển máy tính từ xa thông minh',
+  //   image: '/images/chrome_zdtZmuxmqs.png',
+  //   features: [
+  //     '💻 Bật/tắt máy tính từ xa',
+  //     '📊 Monitor nhiệt độ, tải CPU',
+  //     '🔄 Restart/shutdown tự động',
+  //     '📱 Điều khiển qua app mobile',
+  //     '⚡ Quản lý nguồn điện thông minh',
+  //     '🚨 Cảnh báo lỗi hệ thống'
+  //   ],
+  //   requiresKey: false,
+  //   youtubeUrl: 'https://youtube.com/watch?v=demo-smart-switch',
+  //   schematicUrl: '/schematics/smart-switch-wiring.pdf',
+  //   file3dUrl: '/3d-files/smart-switch-pc.zip',
+  //   version: 'v3.0.1',
+  //   versions: [
+  //     { id: 'switch-s3', name: 'ESP32-S3', description: 'Version đầy đủ', chip: 'esp32-s3', requiresKey: false },
+  //     { id: 'switch-c3', name: 'ESP32-C3 Super Mini', description: 'Version tiêu chuẩn', chip: 'esp32-c3-super-mini', requiresKey: false }
+  //   ],
+  //   notes: [
+  //     '✔️ Miễn phí, không cần key',
+  //     '✔️ Tương thích mọi mainboard',
+  //     '✔️ Hỗ trợ WOL (Wake on LAN)'
+  //   ]
+  // }
   {
     id: 'robot-otto',
     name: 'Robot Otto',
@@ -148,35 +177,36 @@ const FIRMWARES: FirmwareInfo[] = [
       '✔️ Tích hợp ML nhận diện loại rác',
       '⚠️ Cần key để unlock tính năng AI'
     ]
-  },
-  {
-    id: 'smart-switch-pc',
-    name: 'Smart Switch PC',
-    description: 'Điều khiển máy tính từ xa thông minh',
-    image: '/images/chrome_zdtZmuxmqs.png',
-    features: [
-      '💻 Bật/tắt máy tính từ xa',
-      '📊 Monitor nhiệt độ, tải CPU',
-      '🔄 Restart/shutdown tự động',
-      '📱 Điều khiển qua app mobile',
-      '⚡ Quản lý nguồn điện thông minh',
-      '🚨 Cảnh báo lỗi hệ thống'
-    ],
-    requiresKey: false,
-    youtubeUrl: 'https://youtube.com/watch?v=demo-smart-switch',
-    schematicUrl: '/schematics/smart-switch-wiring.pdf',
-    file3dUrl: '/3d-files/smart-switch-pc.zip',
-    version: 'v3.0.1',
-    versions: [
-      { id: 'switch-s3', name: 'ESP32-S3', description: 'Version đầy đủ', chip: 'esp32-s3', requiresKey: false },
-      { id: 'switch-c3', name: 'ESP32-C3 Super Mini', description: 'Version tiêu chuẩn', chip: 'esp32-c3-super-mini', requiresKey: false }
-    ],
-    notes: [
-      '✔️ Miễn phí, không cần key',
-      '✔️ Tương thích mọi mainboard',
-      '✔️ Hỗ trợ WOL (Wake on LAN)'
-    ]
   }
+  // Tạm ẩn Smart Switch PC
+  // {
+  //   id: 'smart-switch-pc',
+  //   name: 'Smart Switch PC',
+  //   description: 'Điều khiển máy tính từ xa thông minh',
+  //   image: '/images/chrome_zdtZmuxmqs.png',
+  //   features: [
+  //     '💻 Bật/tắt máy tính từ xa',
+  //     '📊 Monitor nhiệt độ, tải CPU',
+  //     '🔄 Restart/shutdown tự động',
+  //     '📱 Điều khiển qua app mobile',
+  //     '⚡ Quản lý nguồn điện thông minh',
+  //     '🚨 Cảnh báo lỗi hệ thống'
+  //   ],
+  //   requiresKey: false,
+  //   youtubeUrl: 'https://youtube.com/watch?v=demo-smart-switch',
+  //   schematicUrl: '/schematics/smart-switch-wiring.pdf',
+  //   file3dUrl: '/3d-files/smart-switch-pc.zip',
+  //   version: 'v3.0.1',
+  //   versions: [
+  //     { id: 'switch-s3', name: 'ESP32-S3', description: 'Version đầy đủ', chip: 'esp32-s3', requiresKey: false },
+  //     { id: 'switch-c3', name: 'ESP32-C3 Super Mini', description: 'Version tiêu chuẩn', chip: 'esp32-c3-super-mini', requiresKey: false }
+  //   ],
+  //   notes: [
+  //     '✔️ Miễn phí, không cần key',
+  //     '✔️ Tương thích mọi mainboard',
+  //     '✔️ Hỗ trợ WOL (Wake on LAN)'
+  //   ]
+  // }
 ]
 
 export default function Home() {
