@@ -198,11 +198,21 @@ export default function Home() {
         setDeviceId(result.deviceId || deviceFingerprint)
         setFlashStatus('✅ Key hợp lệ! Sẵn sàng để flash firmware.')
       } else {
-        setFlashStatus(`❌ ${result.message}`)
+        // Check if rate limited or blocked
+        if (result.message?.includes('chặn') || result.message?.includes('spam')) {
+          setFlashStatus(`🚫 ${result.message}`)
+        } else {
+          setFlashStatus(`❌ ${result.message}`)
+        }
         setKeyValidated(false)
       }
-    } catch (error) {
-      setFlashStatus('❌ Lỗi kết nối API. Vui lòng thử lại.')
+    } catch (error: any) {
+      // Check for rate limit response (HTTP 429)
+      if (error.message?.includes('429') || error.message?.includes('Too many')) {
+        setFlashStatus('🚫 Quá nhiều lần thử! Vui lòng chờ 15 phút và thử lại.')
+      } else {
+        setFlashStatus('❌ Lỗi kết nối API. Vui lòng thử lại.')
+      }
       setKeyValidated(false)
     } finally {
       setIsValidatingKey(false)
@@ -742,9 +752,16 @@ export default function Home() {
             
             <div className="mt-6 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
               <p className="text-yellow-800 text-sm mb-3">
-                <strong>💡 Lưu ý:</strong> Mỗi key chỉ có thể sử dụng với một thiết bị duy nhất. 
-                Nếu bạn chưa có key mà spam kích hoạt, chip ESP32 sẽ bị đưa vào danh sách chặn sau 5 lần thử.
+                <strong>💡 Lưu ý bảo mật:</strong> Mỗi key chỉ có thể sử dụng với một thiết bị duy nhất.
               </p>
+              <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-3">
+                <p className="text-red-800 text-sm font-semibold">
+                  <strong>🚫 Chống spam:</strong> Hệ thống có rate limiting - tối đa 5 lần thử sai trong 15 phút.
+                </p>
+                <p className="text-red-700 text-xs mt-1">
+                  Nếu spam key sai, IP của bạn sẽ bị chặn 60 phút. Không thể brute force!
+                </p>
+              </div>
               <details className="text-yellow-800 text-sm">
                 <summary className="cursor-pointer font-semibold">🔧 Xử lý lỗi thường gặp</summary>
                 <div className="mt-3 space-y-2 pl-4">
