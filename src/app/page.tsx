@@ -9,7 +9,7 @@ import { githubReleaseManager, FirmwareInfo as GithubFirmwareInfo } from '@/lib/
 import { FIRMWARE_REPOS, getFirmwareRepoConfig } from '@/lib/firmware-config'
 
 type ChipType = 'esp32-s3' | 'esp32-s3-zero' | 'esp32-c3-super-mini'
-type FirmwareCategory = 'robot-otto' | 'dogmaster' | 'smart-switch-pc'
+type FirmwareCategory = 'kiki-day' | 'robot-otto' | 'dogmaster' | 'smart-switch-pc'
 
 interface ChipInfo {
   id: ChipType
@@ -65,6 +65,33 @@ const CHIPS: ChipInfo[] = [
 ]
 
 const FIRMWARES: FirmwareInfo[] = [
+  {
+    id: 'kiki-day',
+    name: 'Kiki đây',
+    description: 'Firmware đặc biệt dành riêng cho khách hàng VIP',
+    image: '/images/kiki-day.png',
+    features: [
+      '⭐ Phiên bản đặc biệt cho khách hàng',
+      '🎁 Tính năng độc quyền',
+      '🔐 Bảo mật cao cấp',
+      '💎 Hỗ trợ ưu tiên',
+      '🚀 Cập nhật sớm nhất',
+      '🎯 Tùy chỉnh theo yêu cầu'
+    ],
+    requiresKey: true,
+    youtubeUrl: 'https://youtube.com/watch?v=demo-kiki',
+    schematicUrl: '/schematics/kiki-day.pdf',
+    file3dUrl: '/3d-files/kiki-day.zip',
+    version: 'v1.0.0 VIP',
+    versions: [
+      { id: 'kiki-s3', name: 'ESP32-S3', description: 'Phiên bản VIP đặc biệt', chip: 'esp32-s3', requiresKey: true }
+    ],
+    notes: [
+      '⚠️ Yêu cầu key kích hoạt riêng',
+      '✔️ Dành cho khách hàng đã mua gói VIP',
+      '✔️ Liên hệ Zalo 0389827643 để nhận key'
+    ]
+  },
   {
     id: 'robot-otto',
     name: 'Robot Otto',
@@ -154,7 +181,7 @@ const FIRMWARES: FirmwareInfo[] = [
 
 export default function Home() {
   // State management
-  const [selectedChip, setSelectedChip] = useState<ChipType>('esp32-c3-super-mini') // Default to C3
+  const [selectedChip, setSelectedChip] = useState<ChipType>('esp32-s3') // Default to S3
   const [selectedFirmware, setSelectedFirmware] = useState<FirmwareCategory | null>(null)
   const [authKey, setAuthKey] = useState('')
   const [isConnected, setIsConnected] = useState(false)

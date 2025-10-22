@@ -8,6 +8,13 @@ export interface FirmwareRepoConfig {
 }
 
 export const FIRMWARE_REPOS: Record<string, FirmwareRepoConfig> = {
+  'kiki-day': {
+    id: 'kiki-day',
+    name: 'Kiki đây',
+    repository: 'nguyenconghuy2904-source/kiki-day-firmware',
+    owner: 'nguyenconghuy2904-source',
+    repo: 'kiki-day-firmware'
+  },
   'robot-otto': {
     id: 'robot-otto',
     name: 'Robot Otto',
