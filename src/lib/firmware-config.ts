@@ -11,9 +11,9 @@ export const FIRMWARE_REPOS: Record<string, FirmwareRepoConfig> = {
   'kiki-day': {
     id: 'kiki-day',
     name: 'Kiki đây',
-    repository: 'nguyenconghuy2904-source/kiki-day-firmware',
+    repository: 'nguyenconghuy2904-source/xiaozhi-esp32-kiki-day',
     owner: 'nguyenconghuy2904-source',
-    repo: 'kiki-day-firmware'
+    repo: 'xiaozhi-esp32-kiki-day'
   },
   'robot-otto': {
     id: 'robot-otto',
