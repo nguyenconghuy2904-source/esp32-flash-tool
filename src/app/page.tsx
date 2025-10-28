@@ -7,6 +7,8 @@ import { validateKeyWithDevice, generateDeviceFingerprint } from '@/lib/api-clie
 import { ESP32FlashTool, FlashProgress } from '@/lib/esp32-flash'
 import { githubReleaseManager, FirmwareInfo as GithubFirmwareInfo } from '@/lib/github-releases'
 import { FIRMWARE_REPOS, getFirmwareRepoConfig } from '@/lib/firmware-config'
+import ConnectionTroubleshooter from '@/components/ConnectionTroubleshooter'
+import DriverGuide from '@/components/DriverGuide'
 
 type ChipType = 'esp32-s3' | 'esp32-s3-zero' | 'esp32-c3-super-mini'
 type FirmwareCategory = 'kiki-day' | 'robot-otto' | 'dogmaster' // | 'smart-switch-pc' - Tạm ẩn
@@ -227,6 +229,9 @@ export default function Home() {
   const [showConnectModal, setShowConnectModal] = useState(false)
   const [pendingFirmware, setPendingFirmware] = useState<FirmwareCategory | null>(null)
   const flashTool = useRef<ESP32FlashTool>(new ESP32FlashTool())
+  const [showConnectionTroubleshooter, setShowConnectionTroubleshooter] = useState(false)
+  const [showDriverGuide, setShowDriverGuide] = useState(false)
+  const [showRetryButton, setShowRetryButton] = useState(false)
 
   const selectedChipInfo = CHIPS.find(chip => chip.id === selectedChip)
   const selectedFirmwareInfo = FIRMWARES.find(fw => fw.id === selectedFirmware)
@@ -271,7 +276,7 @@ export default function Home() {
       if (error.message?.includes('429') || error.message?.includes('Too many')) {
         setFlashStatus('🚫 Quá nhiều lần thử! Vui lòng chờ 15 phút và thử lại.')
       } else {
-        setFlashStatus('❌ Lỗi kết nối API. Vui lòng thử lại.')
+        setFlashStatus(`❌ Lỗi kết nối API. Vui lòng thử lại.`)
       }
       setKeyValidated(false)
     } finally {
@@ -288,42 +293,70 @@ export default function Home() {
   const handleConnect = async () => {
     // Check WebSerial API support
     if (!('serial' in navigator)) {
-      setFlashStatus('❌ Trình duyệt không hỗ trợ WebSerial API. Vui lòng dùng Chrome, Edge, hoặc Opera (không phải Firefox/Safari)')
+      setFlashStatus(`❌ Trình duyệt không hỗ trợ WebSerial API. Vui lòng dùng Chrome, Edge, hoặc Opera (không phải Firefox/Safari)`)
       return
     }
 
     // Check if running on HTTPS or localhost
     if (window.location.protocol !== 'https:' && !window.location.hostname.includes('localhost') && window.location.hostname !== '127.0.0.1') {
-      setFlashStatus('❌ WebSerial chỉ hoạt động trên HTTPS hoặc localhost')
+      setFlashStatus(`❌ WebSerial chỉ hoạt động trên HTTPS hoặc localhost`)
       return
+    }
+
+    // Check if WebSerial is not blocked by browser
+    try {
+      // Test if we can access serial at all
+      const ports = await (navigator as any).serial.getPorts()
+      console.log('Available serial ports:', ports.length)
+    } catch (error: any) {
+      if (error.name === 'NotAllowedError') {
+        setFlashStatus(`❌ WebSerial bị chặn bởi trình duyệt:\n• Cho phép WebSerial trong cài đặt trình duyệt\n• Làm mới trang và thử lại\n• Kiểm tra extension chặn WebSerial`)
+        return
+      }
+      console.log('Serial ports check:', error?.message)
     }
 
     try {
       setFlashStatus('🔌 Đang kết nối với ESP32...')
-      await flashTool.current.connect()
-      
-      // If we get here, connection was successful
-      const port = flashTool.current.getPort()
-      setSerialPort(port)
-      setIsConnected(true)
-      setFlashStatus('✅ Đã kết nối với ESP32!')
-      // Keep modal open to show "Nạp" button
+      const success = await flashTool.current.connect()
+
+      if (success) {
+        // Test basic connection
+        const basicTest = await flashTool.current.testBasicConnection()
+        console.log('Basic connection test result:', basicTest)
+
+        const port = flashTool.current.getPort()
+        setSerialPort(port)
+        setIsConnected(true)
+        setShowRetryButton(false)
+        setFlashStatus('✅ Đã kết nối với ESP32 thành công!')
+      } else {
+        throw new Error('Connection failed')
+      }
       
     } catch (error: any) {
       console.error('Connection error:', error)
       setIsConnected(false)
       
-      // Provide specific error messages
+      // Provide specific error messages with retry buttons
       if (error.name === 'NotFoundError' || error.message?.includes('No port selected')) {
-        setFlashStatus('❌ Bạn chưa chọn cổng COM. Vui lòng thử lại và chọn cổng khi popup hiện ra.')
+        setFlashStatus(`❌ Không tìm thấy thiết bị USB. Vui lòng:\n• Kết nối ESP32 với máy tính\n• Nhấn giữ nút BOOT khi cắm USB\n• Thử cổng USB khác\n• Cài driver CH340/CP2102 nếu cần\n\n🔄 Nhấn nút "Thử lại" để kết nối lại`)
+        setShowRetryButton(true)
       } else if (error.name === 'NotAllowedError' || error.name === 'SecurityError') {
-        setFlashStatus('❌ Bạn đã từ chối quyền truy cập. Vui lòng thử lại và cho phép kết nối.')
+        setFlashStatus(`❌ Quyền truy cập USB bị từ chối. Vui lòng:\n• Cho phép quyền truy cập khi popup hiện ra\n• Làm mới trang và thử lại\n• Dùng Chrome, Edge, hoặc Opera\n\n🔄 Nhấn nút "Thử lại" để kết nối lại`)
+        setShowRetryButton(true)
       } else if (error.name === 'NetworkError' || error.message?.includes('already open')) {
-        setFlashStatus('❌ Thiết bị đang được sử dụng. Đợi 2 giây và thử lại.')
+        setFlashStatus(`❌ Thiết bị đang được sử dụng. Vui lòng:\n• Đóng Arduino IDE, PlatformIO\n• Đóng các ứng dụng serial khác\n• Đợi 2 giây và thử lại\n\n🔄 Nhấn nút "Thử lại" để kết nối lại`)
+        setShowRetryButton(true)
       } else if (error.message?.includes('BOOT')) {
-        setFlashStatus('❌ Không thể kết nối ESP32. Vui lòng GIỮ NÚT BOOT khi cắm USB và thử lại.')
+        setFlashStatus(`❌ ESP32 không ở chế độ flash. Vui lòng:\n• Nhấn giữ nút BOOT\n• Cắm cáp USB vào máy tính\n• Thả nút BOOT sau khi cắm\n\n🔄 Nhấn nút "Thử lại" để kết nối lại`)
+        setShowRetryButton(true)
+      } else if (error.message?.includes('timeout') || error.message?.includes('sync')) {
+        setFlashStatus(`❌ Không thể kết nối bootloader ESP32. Vui lòng:\n• Kiểm tra ESP32 có hoạt động không\n• Thử ESP32 khác\n• Cài driver đúng cho ESP32\n\n🔄 Nhấn nút "Thử lại" để kết nối lại`)
+        setShowRetryButton(true)
       } else {
-        setFlashStatus(`❌ Lỗi: ${error.message}`)
+        setFlashStatus(`❌ Lỗi kết nối: ${error.message}\n💡 Gợi ý: Sử dụng nút "🔧 Kiểm tra" để chẩn đoán chi tiết\n\n🔄 Nhấn nút "Thử lại" để kết nối lại`)
+        setShowRetryButton(true)
       }
     }
   }
@@ -334,6 +367,7 @@ export default function Home() {
       await flashTool.current.disconnect()
       setSerialPort(null)
       setIsConnected(false)
+      setShowRetryButton(false)
       setFlashStatus('✅ Đã ngắt kết nối!')
     } catch (error: any) {
       console.error('Disconnect error:', error)
@@ -346,17 +380,17 @@ export default function Home() {
     const targetFirmwareInfo = FIRMWARES.find(fw => fw.id === targetFirmware)
     
     if (!selectedChip || !targetFirmware) {
-      setFlashStatus('❌ Vui lòng chọn chip và firmware!')
+      setFlashStatus(`❌ Vui lòng chọn chip và firmware!`)
       return
     }
 
     if (targetFirmwareInfo?.requiresKey && !keyValidated) {
-      setFlashStatus('❌ Firmware này yêu cầu key hợp lệ!')
+      setFlashStatus(`❌ Firmware này yêu cầu key hợp lệ!`)
       return
     }
 
     if (!isConnected) {
-      setFlashStatus('❌ Vui lòng kết nối với ESP32 trước!')
+      setFlashStatus(`❌ Vui lòng kết nối với ESP32 trước!`)
       return
     }
 
@@ -366,7 +400,7 @@ export default function Home() {
       // Get firmware repo config for target firmware
       const repoConfig = getFirmwareRepoConfig(targetFirmware)
       if (!repoConfig) {
-        setFlashStatus('❌ Không tìm thấy cấu hình firmware!')
+        setFlashStatus(`❌ Không tìm thấy cấu hình firmware!`)
         return
       }
 
@@ -722,12 +756,20 @@ export default function Home() {
                 
                 <div className="flex space-x-2">
                   {!isConnected ? (
-                    <button
-                      onClick={handleConnect}
-                      className="bg-accent-blue hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-md"
-                    >
-                      🔌 Kết nối thiết bị
-                    </button>
+                    <>
+                      <button
+                        onClick={handleConnect}
+                        className="bg-accent-blue hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-md"
+                      >
+                        🔌 Kết nối thiết bị
+                      </button>
+                      <button
+                        onClick={() => setShowConnectionTroubleshooter(true)}
+                        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-md"
+                      >
+                        🔧 Kiểm tra
+                      </button>
+                    </>
                   ) : (
                     <button
                       onClick={handleDisconnect}
@@ -785,7 +827,20 @@ export default function Home() {
                         : 'bg-accent-lightBlue border-accent-blue text-primary'
                       }
                     `}>
-                      {flashStatus}
+                      <div className="whitespace-pre-line">{flashStatus}</div>
+                      {showRetryButton && flashStatus.includes('❌') && (
+                        <div className="mt-3 pt-3 border-t border-red-300">
+                          <button
+                            onClick={() => {
+                              setShowRetryButton(false)
+                              handleConnect()
+                            }}
+                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-md"
+                          >
+                            🔄 Thử lại
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -848,12 +903,28 @@ export default function Home() {
                     <li>Website phải chạy trên HTTPS hoặc localhost</li>
                     <li>Kiểm tra cáp USB có kết nối tốt không</li>
                     <li>Thử cổng USB khác trên máy tính</li>
+                    <li>Sử dụng nút &quot;🔧 Kiểm tra&quot; để chẩn đoán</li>
                   </ul>
                   <p className="mt-2"><strong>❌ Không tìm thấy thiết bị:</strong></p>
                   <ul className="list-disc pl-5 space-y-1">
-                    <li>Cài driver CH340/CP2102 cho ESP32</li>
+                    <li>Cài driver CH340/CP2102 cho ESP32 (<button onClick={() => setShowDriverGuide(true)} className="text-blue-600 hover:underline">hướng dẫn</button>)</li>
                     <li>Đóng Arduino IDE, PlatformIO hoặc app serial khác</li>
                     <li>Thử nhấn giữ nút BOOT khi cắm USB</li>
+                    <li>Thử ESP32 khác hoặc cáp USB khác</li>
+                    <li>Kiểm tra ESP32 có hoạt động (LED sáng)</li>
+                  </ul>
+                  <p className="mt-2"><strong>❌ Quyền truy cập bị từ chối:</strong></p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Cho phép quyền truy cập khi popup hiện ra</li>
+                    <li>Làm mới trang web và thử lại</li>
+                    <li>Kiểm tra cài đặt bảo mật của trình duyệt</li>
+                  </ul>
+                  <p className="mt-2"><strong>❌ Flash firmware thất bại:</strong></p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Kiểm tra kết nối ESP32 ổn định</li>
+                    <li>Đừng ngắt kết nối trong khi flash</li>
+                    <li>Thử flash lại nếu thất bại</li>
+                    <li>Kiểm tra firmware file có bị hỏng không</li>
                   </ul>
                 </div>
               </details>
@@ -1113,6 +1184,16 @@ export default function Home() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Connection Troubleshooter Modal */}
+      {showConnectionTroubleshooter && (
+        <ConnectionTroubleshooter onClose={() => setShowConnectionTroubleshooter(false)} />
+      )}
+
+      {/* Driver Guide Modal */}
+      {showDriverGuide && (
+        <DriverGuide onClose={() => setShowDriverGuide(false)} />
       )}
     </div>
   )
