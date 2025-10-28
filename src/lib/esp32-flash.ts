@@ -22,6 +22,18 @@ export class ESP32FlashTool {
         throw new Error('WebSerial API không được hỗ trợ')
       }
 
+      // Close any existing port first
+      if (this.port) {
+        console.log('Closing existing port before reconnect...')
+        try {
+          await this.port.close()
+          await new Promise(resolve => setTimeout(resolve, 100)) // Wait for port to fully close
+        } catch (e) {
+          console.log('Port already closed or error closing:', e)
+        }
+        this.port = null
+      }
+
       // Request port access - allow all serial devices
       this.port = await (navigator as any).serial.requestPort({
         // No filters - allow user to select any serial port
@@ -67,9 +79,12 @@ export class ESP32FlashTool {
       // CRITICAL: Cleanup port if connection failed
       // Otherwise port stays open and next attempt will fail with "port already open"
       try {
-        if (this.port && this.port.readable) {
+        if (this.port) {
+          console.log('Cleaning up port after connection error...')
           await this.port.close()
           console.log('Port closed after connection error')
+          // Wait for port to fully close
+          await new Promise(resolve => setTimeout(resolve, 100))
         }
       } catch (closeError) {
         console.error('Error closing port:', closeError)

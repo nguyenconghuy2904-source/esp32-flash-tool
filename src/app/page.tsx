@@ -314,17 +314,17 @@ export default function Home() {
       setIsConnected(false)
       
       // Provide specific error messages
-      if (error.name === 'NotFoundError') {
-        setFlashStatus('❌ Không tìm thấy thiết bị USB. Vui lòng cắm ESP32 và thử lại.')
+      if (error.name === 'NotFoundError' || error.message?.includes('No port selected')) {
+        setFlashStatus('❌ Bạn chưa chọn cổng COM. Vui lòng thử lại và chọn cổng khi popup hiện ra.')
       } else if (error.name === 'NotAllowedError' || error.name === 'SecurityError') {
         setFlashStatus('❌ Bạn đã từ chối quyền truy cập. Vui lòng thử lại và cho phép kết nối.')
-      } else if (error.name === 'NetworkError') {
-        setFlashStatus('❌ Thiết bị đang được sử dụng bởi ứng dụng khác. Đóng Arduino IDE, PlatformIO, hoặc ứng dụng serial khác.')
+      } else if (error.name === 'NetworkError' || error.message?.includes('already open')) {
+        setFlashStatus('❌ Thiết bị đang được sử dụng. Đợi 2 giây và thử lại.')
+      } else if (error.message?.includes('BOOT')) {
+        setFlashStatus('❌ Không thể kết nối ESP32. Vui lòng GIỮ NÚT BOOT khi cắm USB và thử lại.')
       } else {
-        setFlashStatus(`❌ Lỗi kết nối: ${error.message}`)
+        setFlashStatus(`❌ Lỗi: ${error.message}`)
       }
-      
-      setIsConnected(false)
     }
   }
 
