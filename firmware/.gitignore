@@ -1,0 +1,10 @@
+# Ignore all binary files
+*.bin
+*.elf
+*.hex
+
+# Except sample files (if any)
+!sample-*.bin
+
+# Keep README
+!README.md
