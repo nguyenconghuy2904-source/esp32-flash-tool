@@ -484,54 +484,55 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-primary shadow-xl border-b-4 border-primary-dark"
-              style={{
-                boxShadow: '0 10px 30px rgba(0,136,122,0.3)'
-              }}>
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg"
-                   style={{
-                     boxShadow: '0 8px 25px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.5)',
-                   }}>
-                <span className="text-primary font-bold text-xl">MZ</span>
+      {/* Header - Improved with animated gradient */}
+      <header className="animated-gradient text-white py-8 md:py-12 shadow-2xl mb-8 relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center space-x-6 slide-in-up">
+              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-2xl pulse-glow float-animation">
+                <span className="text-3xl">⚡</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">MinizFlash Tool</h1>
-                <p className="text-white/80 text-sm">Công cụ nạp firmware cho ESP32 với xác thực key</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 tracking-tight">MinizFlash Tool</h1>
+                <p className="text-white/90 text-base md:text-lg font-medium">Công cụ nạp firmware cho ESP32 với xác thực key</p>
               </div>
             </div>
-            <div className="text-right text-white/80 text-sm">
-              <p>💻 Vui lòng sử dụng máy tính để nạp chương trình</p>
-              <p>🔧 Nhấn giữ nút BOOT và cắm cáp nếu bị lỗi</p>
+            <div className="text-center md:text-right text-white/90 text-sm md:text-base space-y-2 fade-in glass-effect px-6 py-4 rounded-2xl backdrop-blur-md">
+              <p className="flex items-center gap-2 justify-center md:justify-end">
+                <span className="text-xl">💻</span> 
+                <span>Vui lòng sử dụng máy tính để nạp chương trình</span>
+              </p>
+              <p className="flex items-center gap-2 justify-center md:justify-end">
+                <span className="text-xl">🔧</span>
+                <span>Nhấn giữ nút BOOT và cắm cáp nếu bị lỗi</span>
+              </p>
             </div>
           </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Contact Notice */}
-        <div className="bg-secondary border-2 border-secondary-dark rounded-2xl p-6 mb-8 shadow-lg"
-             style={{
-               boxShadow: '0 15px 35px rgba(0,136,122,0.15)'
-             }}>
-          <div className="flex items-center space-x-4">
-            <div className="text-3xl bg-primary rounded-full w-16 h-16 flex items-center justify-center shadow-lg text-white">
+        {/* Contact Notice - Improved */}
+        <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-200 rounded-3xl p-8 mb-8 shadow-2xl card-hover slide-in-up">
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="w-20 h-20 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center shadow-2xl text-white text-4xl float-animation">
               💬
             </div>
-            <div>
-              <h3 className="text-primary font-bold text-lg">Liên hệ hỗ trợ</h3>
-              <p className="text-primary-dark text-sm mb-2">Để được hướng dẫn chi tiết và hỗ trợ kỹ thuật</p>
-              <div className="flex gap-3">
+            <div className="flex-1 text-center md:text-left">
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-teal-700 to-cyan-700 bg-clip-text text-transparent mb-2">Liên hệ hỗ trợ</h3>
+              <p className="text-gray-700 text-base mb-4">Để được hướng dẫn chi tiết và hỗ trợ kỹ thuật 24/7</p>
+              <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                 <a href="http://zalo.me/0389827643" 
-                   className="bg-accent-blue hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-md">
+                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all transform hover:scale-110 shadow-lg btn-glow">
                   📱 Zalo: 0389827643
                 </a>
                 <a href="https://www.youtube.com/@miniZjp" 
                    target="_blank" rel="noopener noreferrer"
-                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-md">
+                   className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all transform hover:scale-110 shadow-lg btn-glow">
                   🎥 YouTube
                 </a>
               </div>
@@ -539,27 +540,26 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Firmware Grid Section - Like xiaozhi.vn */}
-        <section className="mb-12">
-          <div className="text-center mb-8">
-            <h2 className="text-4xl font-bold text-primary mb-2" 
-                style={{ textShadow: '0 4px 8px rgba(0,136,122,0.15)' }}>
+        {/* Firmware Grid Section - Improved */}
+        <section className="mb-12 fade-in">
+          <div className="text-center mb-10">
+            <h2 className="text-5xl md:text-6xl font-bold mb-4 gradient-text slide-in-up">
               Kho Firmware Minizjp
             </h2>
-            <p className="text-primary-dark text-lg">Chọn chương trình và phiên bản chip bạn muốn nạp</p>
+            <p className="text-gray-600 text-lg md:text-xl font-medium fade-in">Chọn chương trình và phiên bản chip bạn muốn nạp</p>
           </div>
           
-          {/* Chip Selector Tabs - Like xiaozhi.vn */}
-          <div className="mb-8 flex justify-center">
-            <div className="inline-flex bg-gray-800 rounded-xl p-1 shadow-xl">
+          {/* Chip Selector Tabs - Improved */}
+          <div className="mb-10 flex justify-center slide-in-up">
+            <div className="inline-flex bg-gradient-to-r from-gray-800 to-gray-900 rounded-2xl p-2 shadow-2xl">
               {CHIPS.map((chip) => (
                 <button
                   key={chip.id}
                   onClick={() => setSelectedChip(chip.id)}
-                  className={`px-8 py-3 rounded-lg font-medium transition-all ${
+                  className={`px-8 py-4 rounded-xl font-bold text-base transition-all duration-300 ${
                     selectedChip === chip.id
-                      ? 'bg-white text-gray-900 shadow-lg'
-                      : 'text-gray-300 hover:text-white'
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-2xl transform scale-105'
+                      : 'text-gray-300 hover:text-white hover:bg-white/10'
                   }`}
                 >
                   {chip.name}
@@ -570,9 +570,9 @@ export default function Home() {
 
           {/* Firmware Grid */}
           {selectedChip === 'esp32-s3' ? (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {FIRMWARES.map((firmware) => (
-                <div key={firmware.id} className="bg-white border-2 border-primary/20 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                <div key={firmware.id} className="bg-white border-2 border-gray-200 rounded-2xl overflow-hidden shadow-xl card-hover fade-in">
                   {/* Firmware Image - 1:1 Aspect Ratio */}
                   <div className="relative w-full aspect-square bg-gray-900 overflow-hidden">
                     {firmware.image ? (
@@ -643,9 +643,9 @@ export default function Home() {
                   <div className="p-3 pt-2">
                     <button
                       onClick={() => handleFirmwareClick(firmware.id)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors mb-2"
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-3 rounded-xl text-base font-bold transition-all transform hover:scale-105 shadow-lg btn-glow mb-2"
                     >
-                      Nạp FW
+                      ⚡ Nạp FW
                     </button>
                     <div className="flex gap-2">
                       {firmware.schematicUrl && (
@@ -754,18 +754,18 @@ export default function Home() {
                   </span>
                 </div>
                 
-                <div className="flex space-x-2">
+                <div className="flex space-x-3">
                   {!isConnected ? (
                     <>
                       <button
                         onClick={handleConnect}
-                        className="bg-accent-blue hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-md"
+                        className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-8 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-xl btn-glow"
                       >
                         🔌 Kết nối thiết bị
                       </button>
                       <button
                         onClick={() => setShowConnectionTroubleshooter(true)}
-                        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-md"
+                        className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-6 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-xl"
                       >
                         🔧 Kiểm tra
                       </button>
@@ -773,7 +773,7 @@ export default function Home() {
                   ) : (
                     <button
                       onClick={handleDisconnect}
-                      className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-md"
+                      className="bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white px-8 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-xl btn-glow"
                     >
                       🔌 Ngắt kết nối
                     </button>
@@ -795,24 +795,25 @@ export default function Home() {
                   <button
                     onClick={() => handleFlash()}
                     disabled={!isConnected || flashProgress !== null}
-                    className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-white border-2 border-primary-dark rounded-lg px-6 py-4 font-medium transition-colors shadow-md mb-4"
+                    className="w-full bg-gradient-to-r from-green-600 via-teal-600 to-cyan-600 hover:from-green-700 hover:via-teal-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl px-8 py-6 text-xl font-bold transition-all transform hover:scale-105 shadow-2xl btn-glow mb-6 pulse-glow"
                   >
-                    {flashProgress ? '⏳ Đang nạp...' : '⚡ Bắt đầu nạp Firmware'}
+                    {flashProgress ? '⏳ Đang nạp firmware...' : '⚡ Bắt đầu nạp Firmware'}
                   </button>
                   
-                  {/* Progress Bar */}
+                  {/* Progress Bar - Improved */}
                   {flashProgress && (
-                    <div className="mb-4">
-                      <div className="flex justify-between text-sm text-primary font-semibold mb-2">
-                        <span>Tiến độ: {flashProgress.progress}%</span>
-                        <span>{flashProgress.stage}</span>
+                    <div className="mb-6 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border-2 border-blue-200 shadow-xl fade-in">
+                      <div className="flex justify-between text-base font-bold mb-3">
+                        <span className="text-blue-700">⚡ Tiến độ: {flashProgress.progress}%</span>
+                        <span className="text-purple-700">{flashProgress.stage}</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3 border border-primary/20">
+                      <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden shadow-inner">
                         <div
-                          className="bg-primary h-3 rounded-full transition-all duration-300 shadow-md"
+                          className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 h-6 rounded-full transition-all duration-500 shadow-lg animate-pulse"
                           style={{ width: `${flashProgress.progress}%` }}
                         ></div>
                       </div>
+                      <p className="text-sm text-gray-600 mt-3 text-center font-medium">{flashProgress.message}</p>
                     </div>
                   )}
                   
