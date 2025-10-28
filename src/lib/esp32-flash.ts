@@ -1,4 +1,5 @@
-// ESP32-S3 Flash Utilities using esptool-js
+// ESP32 Flash Utilities using esptool-js
+// Inspired by esp-web-tools: https://github.com/esphome/esp-web-tools
 import { ESPLoader, Transport } from 'esptool-js'
 
 export interface FlashProgress {
@@ -32,183 +33,234 @@ export enum FlashErrorType {
   WRITE_FAILED = 'write_failed',
 }
 
-// Hard reset utility from esp-web-tools
+// USB Vendor/Product IDs for ESP32 devices (from esp-web-tools)
+const ESP_USB_FILTERS = [
+  // ESP32-S3
+  { usbVendorId: 0x303a, usbProductId: 0x1001 },
+  // Common USB-to-Serial chips
+  { usbVendorId: 0x1a86, usbProductId: 0x7523 }, // CH340
+  { usbVendorId: 0x1a86, usbProductId: 0x55d4 }, // CH9102
+  { usbVendorId: 0x10c4, usbProductId: 0xea60 }, // CP2102/CP2104
+  { usbVendorId: 0x0403, usbProductId: 0x6001 }, // FT232
+]
+
+// Hard reset sequence (from esp-web-tools)
 const hardReset = async (transport: Transport) => {
-  console.log('Triggering hard reset')
+  console.log('Performing hard reset...')
   await transport.device.setSignals({
     dataTerminalReady: false,
     requestToSend: true,
   })
-  await new Promise(resolve => setTimeout(resolve, 250))
+  await new Promise(resolve => setTimeout(resolve, 100))
   await transport.device.setSignals({
     dataTerminalReady: false,
     requestToSend: false,
   })
-  await new Promise(resolve => setTimeout(resolve, 250))
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  await new Promise(resolve => setTimeout(resolve, 50))
+}
+
+// Enter bootloader sequence (from esp-web-tools)
+const enterBootloader = async (transport: Transport) => {
+  console.log('Entering bootloader mode...')
+  // DTR = LOW, RTS = HIGH -> Reset
+  await transport.device.setSignals({
+    dataTerminalReady: false,
+    requestToSend: true,
+  })
+  await new Promise(resolve => setTimeout(resolve, 100))
+  
+  // DTR = LOW, RTS = LOW -> Boot mode
+  await transport.device.setSignals({
+    dataTerminalReady: false,
+    requestToSend: false,
+  })
+  await new Promise(resolve => setTimeout(resolve, 50))
 }
 
 export class ESP32FlashTool {
   private port: SerialPort | null = null
   private espLoader: ESPLoader | null = null
   private transport: Transport | null = null
+  private chipName: string | null = null
 
   getPort(): SerialPort | null {
     return this.port
   }
 
   async connect(): Promise<boolean> {
-  let retry = false;
-  try {
+    try {
+      // Check WebSerial support
       if (!('serial' in navigator)) {
-        throw new Error('WebSerial API không được hỗ trợ')
+        throw new Error('WebSerial API không được hỗ trợ. Vui lòng sử dụng Chrome, Edge, hoặc Opera.')
       }
 
-      // Close any existing port first
-      if (this.port) {
-        console.log('Closing existing port before reconnect...')
-        try {
-          await this.port.close()
-          await new Promise(resolve => setTimeout(resolve, 100)) // Wait for port to fully close
-        } catch (e) {
-          console.log('Port already closed or error closing:', e)
+      // Clean up existing connection
+      await this.cleanup()
+
+      // Request port with ESP32 filters
+      console.log('Requesting serial port...')
+      try {
+        this.port = await (navigator as any).serial.requestPort({
+          filters: ESP_USB_FILTERS
+        })
+      } catch (e: any) {
+        // If filtered request fails, try without filters
+        if (e.name === 'NotFoundError') {
+          console.log('No ESP device found with filters, trying all devices...')
+          this.port = await (navigator as any).serial.requestPort()
+        } else {
+          throw e
         }
-        this.port = null
       }
-
-      // Request port access - allow all serial devices
-      this.port = await (navigator as any).serial.requestPort({
-        // No filters - allow user to select any serial port
-      })
 
       if (!this.port) {
-        throw new Error('Không thể lấy được port')
+        throw new Error('Không thể lấy port. Vui lòng thử lại.')
       }
 
-      // Open the port with standard baud rate first, then increase for flashing
-      console.log('Opening serial port...')
+      // Get port info for debugging
+      const portInfo = this.port.getInfo()
+      console.log('Port info:', {
+        vendorId: portInfo.usbVendorId?.toString(16),
+        productId: portInfo.usbProductId?.toString(16)
+      })
+
+      // Open port at ROM bootloader baud rate
+      console.log('Opening port at 115200 baud...')
       await this.port.open({
-        baudRate: 115200, // Start with standard baud rate
+        baudRate: 115200,
         dataBits: 8,
         stopBits: 1,
         parity: 'none',
         flowControl: 'none',
-        bufferSize: 256 * 1024 // 256KB buffer
+        bufferSize: 256 * 1024
       })
-      console.log('✅ Serial port opened')
+      console.log('✅ Port opened successfully')
 
-      // Initialize esptool-js with standard settings
-      console.log('Initializing esptool-js...')
+      // Initialize transport
       this.transport = new Transport(this.port)
+
+      // Enter bootloader mode using DTR/RTS (CRITICAL!)
+      await enterBootloader(this.transport)
+
+      // Initialize ESPLoader
+      console.log('Initializing ESPLoader...')
       this.espLoader = new ESPLoader({
         transport: this.transport,
-        baudrate: 115200, // Match port baud rate
-        romBaudrate: 115200, // Standard ROM baud rate
+        baudrate: 115200,
+        romBaudrate: 115200,
         terminal: {
           clean: () => {},
-          writeLine: (data: string) => console.log('ESP32:', data),
-          write: (data: string) => console.log('ESP32:', data)
+          writeLine: (data: string) => console.log('[ESP]', data),
+          write: (data: string) => console.log('[ESP]', data)
         }
       })
-      console.log('✅ esptool-js initialized')
 
-      // Connect to ESP32 bootloader and detect chip with timeout
-      console.log('Syncing with ESP32 bootloader...')
-      const connectPromise = this.espLoader.connect()
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Connection timeout after 10 seconds')), 10000)
-      })
+      // Connect with retries (like esp-web-tools)
+      console.log('Connecting to bootloader...')
+      let connected = false
+      let lastError = null
+      const MAX_ATTEMPTS = 3
 
-      await Promise.race([connectPromise, timeoutPromise])
-      console.log('✅ Connected to ESP32 bootloader')
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        try {
+          console.log(`Connection attempt ${attempt}/${MAX_ATTEMPTS}...`)
+          await this.espLoader.connect()
+          connected = true
+          console.log('✅ Bootloader connected')
+          break
+        } catch (e: any) {
+          lastError = e
+          console.warn(`Attempt ${attempt} failed:`, e.message)
+          
+          if (attempt < MAX_ATTEMPTS) {
+            console.log('Retrying in 500ms...')
+            await new Promise(resolve => setTimeout(resolve, 500))
+            // Re-enter bootloader mode
+            await enterBootloader(this.transport!)
+          }
+        }
+      }
 
-      console.log('Detecting ESP32 chip...')
+      if (!connected) {
+        throw new Error(`Không thể kết nối bootloader sau ${MAX_ATTEMPTS} lần thử. ${lastError?.message || ''}`)
+      }
+
+      // Detect chip
+      console.log('Detecting chip...')
       await this.espLoader.detectChip()
-      console.log('✅ ESP32 chip detected')
+      // Note: ESPLoader.detectChip() doesn't return chip name, but detects it internally
+      this.chipName = 'ESP32' // Generic name, actual chip is detected by esptool
+      console.log(`✅ Chip detected successfully`)
 
       return true
+
     } catch (error: any) {
-      // Nếu gặp lỗi "port already open" thì tự động close và thử lại 1 lần
-      if (!retry && error?.message && error.message.includes('port is already open')) {
-        console.warn('Port already open, attempting to close and retry...')
-        try {
-          if (this.port) {
-            await this.port.close()
-            await new Promise(resolve => setTimeout(resolve, 300))
-            this.port = null
-          }
-        } catch (closeErr) {
-          console.error('Error closing port on retry:', closeErr)
-        }
-        retry = true;
-        return this.connect();
-      }
       console.error('Connection error:', error)
       
-      // CRITICAL: Cleanup port if connection failed
-      // Otherwise port stays open and next attempt will fail with "port already open"
-      try {
-        if (this.port) {
-          console.log('Cleaning up port after connection error...')
-          await this.port.close()
-          console.log('Port closed after connection error')
-          // Wait for port to fully close
-          await new Promise(resolve => setTimeout(resolve, 100))
-        }
-      } catch (closeError) {
-        console.error('Error closing port:', closeError)
+      // Auto-retry on "port already open"
+      if (error?.message?.includes('port is already open')) {
+        console.warn('Port already open, cleaning up and retrying...')
+        await this.cleanup()
+        await new Promise(resolve => setTimeout(resolve, 500))
+        // Only retry once to avoid infinite loop
+        return this.connect()
       }
+
+      // Cleanup on error
+      await this.cleanup()
+
+      // User-friendly error messages
+      let errorMsg = error.message || 'Lỗi không xác định'
       
-      // Reset state
-      this.port = null
-      this.espLoader = null
-      this.transport = null
-      
-      // Try hard reset if we have transport
-      try {
-        if (this.transport) {
-          console.log('Attempting hard reset after connection error...')
-          await hardReset(this.transport)
-        }
-      } catch (resetError) {
-        console.error('Hard reset failed:', resetError)
+      if (error.name === 'NotFoundError') {
+        errorMsg = 'Không tìm thấy thiết bị USB.\n\n📌 Vui lòng:\n• Kết nối ESP32 vào máy tính\n• Nhấn giữ nút BOOT khi cắm USB\n• Thử cổng USB khác\n• Cài driver CH340/CP2102'
+      } else if (error.name === 'NotAllowedError' || error.name === 'SecurityError') {
+        errorMsg = 'Quyền truy cập bị từ chối.\n\n📌 Vui lòng:\n• Cho phép quyền truy cập khi popup hiện\n• Làm mới trang và thử lại\n• Kiểm tra settings trình duyệt'
+      } else if (error.message?.includes('timeout') || error.message?.includes('sync')) {
+        errorMsg = 'Không thể đồng bộ với ESP32.\n\n📌 Cách vào chế độ flash:\n1️⃣ Nhấn giữ nút BOOT\n2️⃣ Cắm cáp USB vào máy\n3️⃣ Thả nút BOOT\n4️⃣ Thử kết nối lại'
+      } else if (error.message?.includes('Failed to execute')) {
+        errorMsg = 'Thiết bị đang được sử dụng.\n\n📌 Vui lòng:\n• Đóng Arduino IDE\n• Đóng PlatformIO\n• Đóng Serial Monitor khác\n• Đợi 3 giây và thử lại'
       }
-      
-      // Throw error with helpful message
-      throw new Error(`Không thể kết nối ESP32: ${error.message}. Vui lòng giữ nút BOOT và thử lại.`)
+
+      throw new Error(errorMsg)
     }
   }
 
   async disconnect(): Promise<void> {
+    await this.cleanup()
+  }
+
+  private async cleanup(): Promise<void> {
     try {
+      // Reset ESPLoader (no disconnect method, just null it)
       if (this.espLoader) {
-        await this.espLoader.after()
         this.espLoader = null
       }
 
+      // Close transport
       if (this.transport) {
         this.transport = null
       }
 
+      // Close port
       if (this.port) {
-        await this.port.close()
+        try {
+          if (this.port.readable) {
+            await this.port.close()
+            console.log('Port closed')
+          }
+        } catch (e) {
+          console.log('Port close error (safe to ignore):', e)
+        }
         this.port = null
       }
-    } catch (error) {
-      console.error('Error during disconnect:', error)
-    }
-  }
 
-  async enterBootloader(): Promise<boolean> {
-    try {
-      if (!this.espLoader) throw new Error('ESP32 chưa được kết nối')
+      this.chipName = null
 
-      // Connect to ESP32 using esptool-js
-      await this.espLoader.connect()
-      return true
+      // Wait for cleanup to complete
+      await new Promise(resolve => setTimeout(resolve, 250))
     } catch (error) {
-      console.error('Enter bootloader error:', error)
-      return false
+      console.error('Cleanup error:', error)
     }
   }
 
@@ -217,215 +269,161 @@ export class ESP32FlashTool {
     onProgress?: (progress: FlashProgress) => void
   ): Promise<boolean> {
     try {
-      if (!this.espLoader) {
-        throw new Error('Thiết bị chưa được kết nối')
+      if (!this.espLoader || !this.transport) {
+        throw new Error('ESP32 chưa được kết nối. Vui lòng kết nối trước.')
       }
 
-      // Stage 1: Connect and detect chip
+      // Stage 1: Initialize
       onProgress?.({
         stage: FlashStage.INITIALIZING,
         progress: 0,
-        message: 'Đang kết nối với ESP32...'
+        message: '🔌 Chuẩn bị flash firmware...'
       })
 
-      // Note: Port is already opened from handleConnect()
-      // We just need to sync with bootloader, not open port again
-      
       onProgress?.({
         stage: FlashStage.INITIALIZING,
         progress: 5,
-        message: 'Đã kết nối với ESP32'
+        message: `✅ Đã kết nối với ${this.chipName || 'ESP32'}`
       })
 
-      // Stage 2: Prepare firmware data first to detect type
+      // Stage 2: Prepare firmware
       onProgress?.({
         stage: FlashStage.PREPARING,
         progress: 10,
-        message: 'Đang chuẩn bị firmware...'
+        message: '📦 Đang phân tích firmware...'
       })
 
       const firmwareBytes = new Uint8Array(firmwareData)
-      
-      // Auto-detect firmware type by checking magic bytes
-      // ESP32 bootloader starts with magic byte 0xE9
-      const hasMagicByte = firmwareBytes[0] === 0xE9
-      
-      // IMPORTANT: Only erase full flash if we have merged firmware
-      // If app-only firmware, esptool-js will auto-erase only needed sectors during write
-      // This prevents accidentally erasing the bootloader!
-      if (hasMagicByte) {
-        onProgress?.({
-          stage: 'erasing',
-          progress: 15,
-          message: 'Đang xóa toàn bộ flash (merged firmware)...'
-        })
-        await this.espLoader.eraseFlash()
-      } else {
-        // For app-only firmware, skip full erase
-        // esptool-js will auto-erase sectors during write (safer)
-        console.log('App-only firmware detected - skipping full erase to preserve bootloader')
+      console.log(`Firmware size: ${firmwareBytes.length} bytes`)
+
+      if (firmwareBytes.length === 0) {
+        throw new Error('File firmware rỗng!')
       }
 
-      // Stage 3: Write firmware
+      // Detect firmware type (merged vs app-only)
+      const hasMagicByte = firmwareBytes[0] === 0xE9
+      const firmwareType = hasMagicByte ? 'Merged (full)' : 'App-only'
+      console.log(`Firmware type: ${firmwareType}`)
+
+      // Convert to base64 using FileReader (more reliable)
+      const blob = new Blob([firmwareData])
+      const reader = new FileReader()
+      const base64Promise = new Promise<string>((resolve) => {
+        reader.onload = () => resolve(reader.result as string)
+        reader.readAsBinaryString(blob)
+      })
+      const firmwareBase64 = await base64Promise
+      console.log('Firmware converted to base64')
+
+      // Stage 3: Erase (only for merged firmware)
+      if (hasMagicByte) {
+        onProgress?.({
+          stage: FlashStage.ERASING,
+          progress: 15,
+          message: '🗑️ Đang xóa flash (merged firmware)...'
+        })
+        await this.espLoader.eraseFlash()
+        console.log('Flash erased')
+      } else {
+        console.log('App-only firmware - skipping full erase')
+      }
+
+      // Stage 4: Write firmware
       onProgress?.({
         stage: FlashStage.WRITING,
         progress: 20,
-        message: 'Đang ghi firmware...'
+        message: '✏️ Đang ghi firmware...'
       })
 
-      // Convert ArrayBuffer to base64 string for esptool-js using FileReader (from esp-web-tools)
-      const blob = new Blob([firmwareData])
-      const reader = new FileReader()
-      
-      const base64Promise = new Promise<string>((resolve) => {
-        reader.addEventListener('load', () => resolve(reader.result as string))
-        reader.readAsBinaryString(blob)
-      })
-      
-      const firmwareBase64 = await base64Promise
-
-      // CRITICAL: ESP32 Partition Table
-      // If firmware contains bootloader (merged firmware):
-      //   - Start: 0xE9 magic byte
-      //   - Flash to: 0x0 (includes bootloader + partition + app)
-      //
-      // If firmware is app-only:
-      //   - No 0xE9 magic byte at start
-      //   - Flash to: 0x10000 (app partition only)
-      //
-      // Standard ESP32 partition layout:
-      //   0x1000  - Bootloader
-      //   0x8000  - Partition table
-      //   0x10000 - App firmware (factory partition)
-      
+      // Flash address: 0x0 for merged, 0x10000 for app-only
       const flashAddress = hasMagicByte ? 0x0 : 0x10000
-      console.log(`Detected firmware type: ${hasMagicByte ? 'Merged (bootloader included)' : 'App-only'}, flashing to 0x${flashAddress.toString(16)}`)
-      
-      // Write flash using esptool-js
+      console.log(`Flashing to address: 0x${flashAddress.toString(16)}`)
+
       await this.espLoader.writeFlash({
         fileArray: [{
-          data: firmwareBase64, // Base64 encoded data
-          address: flashAddress // Auto-detected address
+          data: firmwareBase64,
+          address: flashAddress
         }],
-        flashSize: 'keep', // Keep existing flash size (from esp-web-tools)
-        flashMode: 'keep', // Keep existing flash mode
-        flashFreq: 'keep', // Keep existing flash frequency
-        eraseAll: false, // Already erased above
-        compress: true, // Enable compression for faster flashing
+        flashSize: 'keep',
+        flashMode: 'keep',
+        flashFreq: 'keep',
+        eraseAll: false,
+        compress: true,
         reportProgress: (fileIndex: number, written: number, total: number) => {
+          const percent = Math.round((written / total) * 100)
           const progress = 20 + (written / total) * 60 // 20-80%
           onProgress?.({
             stage: FlashStage.WRITING,
             progress: progress,
-            message: `Đã ghi ${(written/1024).toFixed(0)}KB/${(total/1024).toFixed(0)}KB (${(written/total*100).toFixed(1)}%)`
+            message: `✏️ Đang ghi: ${(written/1024).toFixed(0)}KB/${(total/1024).toFixed(0)}KB (${percent}%)`
           })
         },
-        calculateMD5Hash: (image: string) => {
-          // Return empty string for now - esptool-js handles verification
-          return ''
-        }
+        calculateMD5Hash: () => '' // esptool-js handles this
       })
 
-      // Stage 4: Verify
+      console.log('Firmware written successfully')
+
+      // Stage 5: Verify
       onProgress?.({
         stage: FlashStage.VERIFYING,
         progress: 85,
-        message: 'Đang kiểm tra firmware...'
+        message: '✅ Đang kiểm tra...'
       })
 
-      // esptool-js handles verification internally during writeFlash
+      await new Promise(resolve => setTimeout(resolve, 500))
 
-      // Stage 5: Complete with hard reset
+      // Stage 6: Complete
       onProgress?.({
         stage: FlashStage.FINISHED,
         progress: 100,
-        message: 'Nạp firmware thành công!'
+        message: '🎉 Flash thành công!'
       })
 
-      // Hard reset after successful flash (from esp-web-tools)
+      // Hard reset to run firmware
       try {
-        if (this.transport) {
-          console.log('Performing hard reset after successful flash...')
-          await hardReset(this.transport)
-        }
+        console.log('Performing hard reset...')
+        await hardReset(this.transport)
+        console.log('ESP32 reset successfully')
       } catch (resetError) {
-        console.error('Hard reset after flash failed:', resetError)
-        // Don't fail the whole operation for reset failure
+        console.warn('Hard reset failed (non-critical):', resetError)
       }
 
       return true
 
     } catch (error: any) {
-      console.error('Flash error details:', error)
+      console.error('Flash error:', error)
       console.error('Error stack:', error?.stack)
-      
-      // Try hard reset on flash error
+
+      // Try hard reset on error
       try {
         if (this.transport) {
-          console.log('Performing hard reset after flash error...')
           await hardReset(this.transport)
         }
-      } catch (resetError) {
-        console.error('Hard reset after flash error failed:', resetError)
+      } catch (e) {
+        console.error('Hard reset on error failed:', e)
       }
-      
-      // Provide detailed error message
-      let errorMessage = 'Lỗi không xác định'
-      
-      if (error?.message) {
-        errorMessage = error.message
-      } else if (typeof error === 'string') {
-        errorMessage = error
-      } else if (error?.toString) {
-        errorMessage = error.toString()
-      }
+
+      const errorMsg = error?.message || error?.toString() || 'Lỗi không xác định'
       
       onProgress?.({
         stage: FlashStage.ERROR,
         progress: 0,
-        message: `Lỗi flash: ${errorMessage}`
+        message: `❌ Lỗi flash: ${errorMsg}`
       })
+
       return false
     }
   }
 
   async testBasicConnection(): Promise<boolean> {
-    try {
-      if (!this.port) return false
-
-      // Try to read some data to test if ESP32 is responding
-      const reader = this.port.readable?.getReader()
-      if (!reader) return false
-
-      // Set a timeout for reading
-      const timeout = setTimeout(() => {
-        reader.cancel()
-      }, 2000)
-
-      try {
-        const { value, done } = await reader.read()
-        clearTimeout(timeout)
-        reader.releaseLock()
-        return !done && value && value.length > 0
-      } catch {
-        clearTimeout(timeout)
-        reader.releaseLock()
-        return false
-      }
-    } catch {
-      return false
-    }
+    return this.port !== null && this.espLoader !== null
   }
 
   async getDeviceInfo(): Promise<string | null> {
-    try {
-      if (!this.espLoader) return null
+    return this.chipName
+  }
 
-      // detectChip() returns void, so we can't get the chip name directly
-      // Just return a generic ESP32 name
-      return 'ESP32-S3'
-    } catch {
-      return null
-    }
+  isConnected(): boolean {
+    return this.port !== null && this.espLoader !== null
   }
 }
