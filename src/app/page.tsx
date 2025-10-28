@@ -226,8 +226,6 @@ export default function Home() {
   const [showYouTubeAd, setShowYouTubeAd] = useState(false)
   const [activeTab, setActiveTab] = useState<'flash' | 'monitor'>('flash')
   const [serialPort, setSerialPort] = useState<SerialPort | null>(null)
-  const [showConnectModal, setShowConnectModal] = useState(false)
-  const [pendingFirmware, setPendingFirmware] = useState<FirmwareCategory | null>(null)
   const flashTool = useRef<ESP32FlashTool>(new ESP32FlashTool())
   const [showConnectionTroubleshooter, setShowConnectionTroubleshooter] = useState(false)
   const [showDriverGuide, setShowDriverGuide] = useState(false)
@@ -284,10 +282,14 @@ export default function Home() {
     }
   }
 
-  // Handle firmware button click - Show connect modal
-  const handleFirmwareClick = (firmwareId: FirmwareCategory) => {
-    setPendingFirmware(firmwareId)
-    setShowConnectModal(true)
+  // Handle firmware button click - Connect directly (no modal to preserve user gesture)
+  const handleFirmwareClick = async (firmwareId: FirmwareCategory) => {
+    setSelectedFirmware(firmwareId)
+    
+    // If not connected, connect first
+    if (!isConnected) {
+      await handleConnect()
+    }
   }
 
   const handleConnect = async () => {
@@ -1114,78 +1116,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-
-      {/* Connection Modal */}
-      {showConnectModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
-            {/* Close button */}
-            <button
-              onClick={() => {
-                setShowConnectModal(false)
-                setPendingFirmware(null)
-                setIsConnected(false)
-                setFlashStatus('')
-              }}
-              className="float-right text-gray-400 hover:text-gray-600 text-2xl font-bold"
-            >
-              ×
-            </button>
-
-            <h3 className="text-2xl font-bold text-primary mb-4">
-              {isConnected ? '✅ Đã kết nối' : '🔌 Kết nối thiết bị'}
-            </h3>
-            
-            {!isConnected ? (
-              <>
-                <p className="text-gray-600 mb-6">
-                  Vui lòng kết nối ESP32 qua USB để tiếp tục nạp firmware
-                </p>
-                
-                <button
-                  onClick={handleConnect}
-                  className="w-full bg-accent-blue hover:bg-blue-700 text-white px-6 py-4 rounded-lg font-bold text-lg transition-colors shadow-lg"
-                >
-                  🔌 Kết nối ESP32
-                </button>
-              </>
-            ) : (
-              <>
-                <p className="text-green-600 mb-6 font-medium">
-                  ✅ Thiết bị đã sẵn sàng! Bấm nút bên dưới để bắt đầu nạp firmware
-                </p>
-                
-                <button
-                  onClick={async () => {
-                    // Flash first, then close modal on success
-                    if (pendingFirmware) {
-                      setSelectedFirmware(pendingFirmware)
-                      // Flash with explicit firmware parameter
-                      await handleFlash(pendingFirmware)
-                      // Close modal after flash completes (success or error)
-                      setShowConnectModal(false)
-                    }
-                  }}
-                  disabled={flashProgress !== null}
-                  className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-4 rounded-lg font-bold text-lg transition-colors shadow-lg animate-pulse"
-                >
-                  {flashProgress ? '⏳ Đang nạp...' : '⚡ Nạp Firmware'}
-                </button>
-              </>
-            )}
-
-            {flashStatus && (
-              <div className={`mt-4 p-3 rounded-lg text-sm ${
-                flashStatus.includes('✅') ? 'bg-green-50 text-green-800' :
-                flashStatus.includes('❌') ? 'bg-red-50 text-red-800' :
-                'bg-blue-50 text-blue-800'
-              }`}>
-                {flashStatus}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Connection Troubleshooter Modal */}
       {showConnectionTroubleshooter && (
