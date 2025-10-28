@@ -54,6 +54,12 @@ export class ESP32FlashTool {
         }
       })
 
+      // Connect to ESP32 bootloader and detect chip
+      console.log('Syncing with ESP32 bootloader...')
+      await this.espLoader.connect()
+      await this.espLoader.detectChip()
+      console.log('✅ ESP32 bootloader ready')
+
       return true
     } catch (error) {
       console.error('Connection error:', error)
@@ -110,25 +116,14 @@ export class ESP32FlashTool {
         message: 'Đang kết nối với ESP32...'
       })
 
-      try {
-        // Connect to ESP32 bootloader
-        console.log('Attempting to connect to ESP32...')
-        await this.espLoader.connect()
-        
-        // Detect chip type (returns void)
-        console.log('Detecting chip type...')
-        await this.espLoader.detectChip()
-        console.log('✅ Chip detected successfully')
-        
-        onProgress?.({
-          stage: 'connecting',
-          progress: 5,
-          message: 'Đã kết nối với ESP32'
-        })
-      } catch (connectError: any) {
-        console.error('Connection failed:', connectError)
-        throw new Error(`Không thể kết nối ESP32: ${connectError.message}. Vui lòng giữ nút BOOT và thử lại.`)
-      }
+      // Note: Port is already opened from handleConnect()
+      // We just need to sync with bootloader, not open port again
+      
+      onProgress?.({
+        stage: 'connecting',
+        progress: 5,
+        message: 'Đã kết nối với ESP32'
+      })
 
       // Stage 2: Prepare firmware data first to detect type
       onProgress?.({
