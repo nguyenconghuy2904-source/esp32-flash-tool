@@ -231,14 +231,17 @@ export default function Home() {
   const selectedChipInfo = CHIPS.find(chip => chip.id === selectedChip)
   const selectedFirmwareInfo = FIRMWARES.find(fw => fw.id === selectedFirmware)
 
-  // Auto show YouTube ad once per session
+  // Auto show YouTube ad once per session (only once ever)
   useEffect(() => {
     const hasSeenYouTubeAd = localStorage.getItem('hasSeenYouTubeAd')
-    if (!hasSeenYouTubeAd) {
-      setTimeout(() => {
+    if (!hasSeenYouTubeAd || hasSeenYouTubeAd !== 'true') {
+      const timer = setTimeout(() => {
         setShowYouTubeAd(true)
         localStorage.setItem('hasSeenYouTubeAd', 'true')
       }, 3000)
+      
+      // Cleanup timer on unmount
+      return () => clearTimeout(timer)
     }
   }, [])
 
@@ -409,7 +412,7 @@ export default function Home() {
       
       setFlashStatus('🔄 Đang flash firmware...')
       
-      await flashTool.current.flashFirmware(
+      const flashSuccess = await flashTool.current.flashFirmware(
         firmwareData,
         (progress) => {
           setFlashProgress(progress)
@@ -417,12 +420,21 @@ export default function Home() {
         }
       )
 
-      setFlashStatus('🎉 Flash firmware thành công!')
-      setFlashProgress(null)
-      
-      // Show YouTube ad after successful flash
-      if (selectedFirmwareInfo?.youtubeUrl) {
-        setTimeout(() => setShowYouTubeAd(true), 2000)
+      // Only show success if flash actually succeeded
+      if (flashSuccess) {
+        setFlashStatus('🎉 Flash firmware thành công!')
+        setFlashProgress(null)
+        
+        // Show YouTube ad after successful flash (only if not seen before)
+        const hasSeenYouTubeAd = localStorage.getItem('hasSeenYouTubeAd')
+        if (selectedFirmwareInfo?.youtubeUrl && !hasSeenYouTubeAd) {
+          setTimeout(() => {
+            setShowYouTubeAd(true)
+            localStorage.setItem('hasSeenYouTubeAd', 'true')
+          }, 2000)
+        }
+      } else {
+        throw new Error('Flash firmware thất bại - vui lòng thử lại')
       }
       
     } catch (error: any) {
@@ -1068,17 +1080,19 @@ export default function Home() {
                 
                 <button
                   onClick={async () => {
-                    // Close modal and flash with current firmware
+                    // Flash first, then close modal on success
                     if (pendingFirmware) {
                       setSelectedFirmware(pendingFirmware)
-                      setShowConnectModal(false)
                       // Flash with explicit firmware parameter
                       await handleFlash(pendingFirmware)
+                      // Close modal after flash completes (success or error)
+                      setShowConnectModal(false)
                     }
                   }}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white px-6 py-4 rounded-lg font-bold text-lg transition-colors shadow-lg animate-pulse"
+                  disabled={flashProgress !== null}
+                  className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-4 rounded-lg font-bold text-lg transition-colors shadow-lg animate-pulse"
                 >
-                  ⚡ Nạp Firmware
+                  {flashProgress ? '⏳ Đang nạp...' : '⚡ Nạp Firmware'}
                 </button>
               </>
             )}
