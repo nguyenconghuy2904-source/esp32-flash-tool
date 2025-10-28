@@ -1,10 +1,11 @@
 # Netlify deployment configuration
 [build]
   command = "npm run build"
-  publish = ".next"
+  publish = "out"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+# Note: Static export doesn't need @netlify/plugin-nextjs
+# [[plugins]]
+#   package = "@netlify/plugin-nextjs"
 
 [build.environment]
   NEXT_PUBLIC_API_URL = "https://esp32-flash-api.your-domain.workers.dev"

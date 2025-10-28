@@ -158,10 +158,10 @@ const FIRMWARES: FirmwareInfo[] = [
     features: [
       '♻️ Phân loại rác tự động AI',
       '🚪 Nắp thùng mở tự động',
-      '� Theo dõi mức đầy rác',
-      '� Thông báo khi đầy',
+      '📊 Theo dõi mức đầy rác',
+      '🔔 Thông báo khi đầy',
       '📱 Ứng dụng điều khiển từ xa',
-      '� Tích hợp IoT thông minh'
+      '🌐 Tích hợp IoT thông minh'
     ],
     requiresKey: true,
     youtubeUrl: 'https://youtube.com/watch?v=demo-smart-trash',

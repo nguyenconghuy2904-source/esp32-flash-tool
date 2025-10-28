@@ -111,7 +111,7 @@ const SerialMonitor: React.FC<SerialMonitorProps> = ({ port, isConnected }) => {
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium shadow-md transition-colors"
               onClick={() => setOutput('')}
             >
-              �️ Xóa màn hình
+              🗑️ Xóa màn hình
             </button>
           </div>
           <div className="border-2 border-primary/20 rounded-lg bg-white p-3 h-96 overflow-y-auto font-mono text-sm text-primary shadow-inner whitespace-pre-wrap">

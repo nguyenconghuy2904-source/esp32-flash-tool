@@ -6,8 +6,8 @@ Công cụ nạp firmware cho ESP32 trực tiếp qua trình duyệt web, không
 
 - 🌐 **Nạp qua Web**: Không cần Arduino IDE hay driver
 - ⚡ **Nhanh & Đơn Giản**: Chỉ cần trình duyệt Chrome/Edge
-- � **Bảo Mật**: Hệ thống key cho firmware VIP
-- � **Responsive**: Hoạt động mọi thiết bị
+- 🔐 **Bảo Mật**: Hệ thống key cho firmware VIP
+- 📱 **Responsive**: Hoạt động mọi thiết bị
 - 🎯 **Nhiều Chip**: ESP32-S3, ESP32-S3 Zero, ESP32-C3
 
 ## 🎯 Hỗ Trợ
