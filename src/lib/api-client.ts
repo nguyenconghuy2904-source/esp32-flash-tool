@@ -84,8 +84,20 @@ export async function validateKeyWithDevice(key: string, deviceId: string): Prom
   return apiClient.validateKey(key, deviceId)
 }
 
-// Device fingerprinting helper
+// Device fingerprinting helper with localStorage persistence
 export function generateDeviceFingerprint(): string {
+  // CRITICAL: Use localStorage to keep deviceId stable across sessions
+  // This ensures 1 key can be used multiple times on SAME device
+  const STORAGE_KEY = 'esp32_device_id'
+  
+  // Check if we already have a stable device ID
+  const existingDeviceId = localStorage.getItem(STORAGE_KEY)
+  if (existingDeviceId) {
+    console.log('Using existing device ID:', existingDeviceId)
+    return existingDeviceId
+  }
+  
+  // Generate new device fingerprint on first use
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
   if (ctx) {
@@ -99,7 +111,9 @@ export function generateDeviceFingerprint(): string {
     navigator.language,
     screen.width + 'x' + screen.height,
     new Date().getTimezoneOffset(),
-    canvas.toDataURL()
+    canvas.toDataURL(),
+    // Add random component to ensure uniqueness
+    Math.random().toString(36).substring(2, 15)
   ].join('|')
   
   // Simple hash function
@@ -110,5 +124,12 @@ export function generateDeviceFingerprint(): string {
     hash = hash & hash // Convert to 32bit integer
   }
   
-  return `device-${Math.abs(hash).toString(16)}`
+  const deviceId = `device-${Math.abs(hash).toString(16)}`
+  
+  // CRITICAL: Save to localStorage for persistence
+  // This makes the device ID stable across browser restarts
+  localStorage.setItem(STORAGE_KEY, deviceId)
+  console.log('Generated new device ID:', deviceId)
+  
+  return deviceId
 }
