@@ -61,9 +61,27 @@ export class ESP32FlashTool {
       console.log('✅ ESP32 bootloader ready')
 
       return true
-    } catch (error) {
+    } catch (error: any) {
       console.error('Connection error:', error)
-      return false
+      
+      // CRITICAL: Cleanup port if connection failed
+      // Otherwise port stays open and next attempt will fail with "port already open"
+      try {
+        if (this.port && this.port.readable) {
+          await this.port.close()
+          console.log('Port closed after connection error')
+        }
+      } catch (closeError) {
+        console.error('Error closing port:', closeError)
+      }
+      
+      // Reset state
+      this.port = null
+      this.espLoader = null
+      this.transport = null
+      
+      // Throw error with helpful message
+      throw new Error(`Không thể kết nối ESP32: ${error.message}. Vui lòng giữ nút BOOT và thử lại.`)
     }
   }
 

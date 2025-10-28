@@ -300,21 +300,18 @@ export default function Home() {
 
     try {
       setFlashStatus('🔌 Đang kết nối với ESP32...')
-      const connected = await flashTool.current.connect()
+      await flashTool.current.connect()
       
-      if (connected) {
-        // Get the port from the flash tool and store it
-        const port = flashTool.current.getPort()
-        setSerialPort(port)
-        setIsConnected(true)
-        setFlashStatus('✅ Đã kết nối với ESP32!')
-        // Keep modal open to show "Nạp" button
-      } else {
-        setFlashStatus('❌ Không thể kết nối. Vui lòng thử lại.')
-        setIsConnected(false)
-      }
+      // If we get here, connection was successful
+      const port = flashTool.current.getPort()
+      setSerialPort(port)
+      setIsConnected(true)
+      setFlashStatus('✅ Đã kết nối với ESP32!')
+      // Keep modal open to show "Nạp" button
+      
     } catch (error: any) {
       console.error('Connection error:', error)
+      setIsConnected(false)
       
       // Provide specific error messages
       if (error.name === 'NotFoundError') {
