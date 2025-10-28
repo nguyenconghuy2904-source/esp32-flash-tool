@@ -110,9 +110,25 @@ export class ESP32FlashTool {
         message: 'Đang kết nối với ESP32...'
       })
 
-      await this.espLoader.connect()
-      const chipName = await this.espLoader.detectChip()
-      console.log('Detected chip:', chipName)
+      try {
+        // Connect to ESP32 bootloader
+        console.log('Attempting to connect to ESP32...')
+        await this.espLoader.connect()
+        
+        // Detect chip type (returns void)
+        console.log('Detecting chip type...')
+        await this.espLoader.detectChip()
+        console.log('✅ Chip detected successfully')
+        
+        onProgress?.({
+          stage: 'connecting',
+          progress: 5,
+          message: 'Đã kết nối với ESP32'
+        })
+      } catch (connectError: any) {
+        console.error('Connection failed:', connectError)
+        throw new Error(`Không thể kết nối ESP32: ${connectError.message}. Vui lòng giữ nút BOOT và thử lại.`)
+      }
 
       // Stage 2: Prepare firmware data first to detect type
       onProgress?.({
@@ -221,12 +237,25 @@ export class ESP32FlashTool {
 
       return true
 
-    } catch (error) {
-      console.error('Flash error:', error)
+    } catch (error: any) {
+      console.error('Flash error details:', error)
+      console.error('Error stack:', error?.stack)
+      
+      // Provide detailed error message
+      let errorMessage = 'Lỗi không xác định'
+      
+      if (error?.message) {
+        errorMessage = error.message
+      } else if (typeof error === 'string') {
+        errorMessage = error
+      } else if (error?.toString) {
+        errorMessage = error.toString()
+      }
+      
       onProgress?.({
         stage: 'error',
         progress: 0,
-        message: `Lỗi: ${(error as Error).message}`
+        message: `Lỗi flash: ${errorMessage}`
       })
       return false
     }

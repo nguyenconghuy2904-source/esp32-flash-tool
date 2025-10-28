@@ -409,6 +409,11 @@ export default function Home() {
       }
       
       const firmwareData = await response.arrayBuffer()
+      console.log(`✅ Firmware downloaded: ${(firmwareData.byteLength / 1024).toFixed(0)} KB`)
+      
+      if (firmwareData.byteLength === 0) {
+        throw new Error('Firmware file rỗng - vui lòng thử lại')
+      }
       
       setFlashStatus('🔄 Đang flash firmware...')
       
@@ -434,11 +439,14 @@ export default function Home() {
           }, 2000)
         }
       } else {
-        throw new Error('Flash firmware thất bại - vui lòng thử lại')
+        // Flash returned false - check console for details
+        console.error('Flash failed with no exception - check ESP32 connection')
+        throw new Error('Flash firmware thất bại. Vui lòng kiểm tra console để biết chi tiết.')
       }
       
     } catch (error: any) {
-      setFlashStatus(`❌ Lỗi flash: ${error.message}`)
+      console.error('Flash error caught:', error)
+      setFlashStatus(`❌ ${error.message || 'Lỗi không xác định'}`)
       setFlashProgress(null)
     }
   }
