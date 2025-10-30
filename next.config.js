@@ -1,10 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuration for static export (GitHub Pages)
-  output: 'export',
+  // Configuration for static export (GitHub Pages) - only for build
+  // Dev mode uses default .next directory
+  ...(process.env.NODE_ENV === 'production' && {
+    output: 'export',
+    distDir: 'out',
+  }),
   trailingSlash: true,
   skipTrailingSlashRedirect: true,
-  distDir: 'out',
   images: {
     unoptimized: true
   },

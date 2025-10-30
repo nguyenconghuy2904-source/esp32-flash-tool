@@ -1,5 +1,7 @@
 // ESP32 Flash Utilities using esptool-js
-// Inspired by esp-web-tools: https://github.com/esphome/esp-web-tools
+// Refactored based on: https://github.com/nguyenconghuy2904-source/espflash.git
+// Simplified connection flow inspired by ESP Launchpad
+
 import { ESPLoader, Transport } from 'esptool-js'
 
 export interface FlashProgress {
@@ -33,58 +35,45 @@ export enum FlashErrorType {
   WRITE_FAILED = 'write_failed',
 }
 
-// USB Vendor/Product IDs for ESP32 devices (from esp-web-tools)
-const ESP_USB_FILTERS = [
-  // ESP32-S3
-  { usbVendorId: 0x303a, usbProductId: 0x1001 },
-  // Common USB-to-Serial chips
-  { usbVendorId: 0x1a86, usbProductId: 0x7523 }, // CH340
-  { usbVendorId: 0x1a86, usbProductId: 0x55d4 }, // CH9102
-  { usbVendorId: 0x10c4, usbProductId: 0xea60 }, // CP2102/CP2104
-  { usbVendorId: 0x0403, usbProductId: 0x6001 }, // FT232
+// USB Filters for ESP32 devices (from espflash reference)
+const ESP_USB_FILTERS: SerialPortFilter[] = [
+  { usbVendorId: 0x10c4, usbProductId: 0xea60 }, // CP2102/CP2102N
+  { usbVendorId: 0x0403, usbProductId: 0x6010 }, // FT2232H
+  { usbVendorId: 0x303a, usbProductId: 0x1001 }, // Espressif USB_SERIAL_JTAG
+  { usbVendorId: 0x303a, usbProductId: 0x1002 }, // esp-usb-bridge
+  { usbVendorId: 0x303a, usbProductId: 0x0002 }, // ESP32-S2 USB_CDC
+  { usbVendorId: 0x303a, usbProductId: 0x0009 }, // ESP32-S3 USB_CDC
+  { usbVendorId: 0x1a86, usbProductId: 0x55d4 }, // CH9102F
+  { usbVendorId: 0x1a86, usbProductId: 0x7523 }, // CH340T
+  { usbVendorId: 0x0403, usbProductId: 0x6001 }, // FT232R
+  { usbVendorId: 0x10c4, usbProductId: 0xea63 }, // CP2102N variant
+  { usbVendorId: 0x1a86, usbProductId: 0x55d3 }, // CH343
 ]
 
-// Hard reset sequence (from esp-web-tools)
+// Hard reset sequence
 const hardReset = async (transport: Transport) => {
   console.log('Performing hard reset...')
-  await transport.device.setSignals({
-    dataTerminalReady: false,
-    requestToSend: true,
-  })
+  await transport.setDTR(false)
+  await transport.setRTS(true)
   await new Promise(resolve => setTimeout(resolve, 100))
-  await transport.device.setSignals({
-    dataTerminalReady: false,
-    requestToSend: false,
-  })
-  await new Promise(resolve => setTimeout(resolve, 50))
-}
-
-// Enter bootloader sequence (from esp-web-tools)
-const enterBootloader = async (transport: Transport) => {
-  console.log('Entering bootloader mode...')
-  // DTR = LOW, RTS = HIGH -> Reset
-  await transport.device.setSignals({
-    dataTerminalReady: false,
-    requestToSend: true,
-  })
-  await new Promise(resolve => setTimeout(resolve, 100))
-  
-  // DTR = LOW, RTS = LOW -> Boot mode
-  await transport.device.setSignals({
-    dataTerminalReady: false,
-    requestToSend: false,
-  })
+  await transport.setDTR(false)
+  await transport.setRTS(false)
   await new Promise(resolve => setTimeout(resolve, 50))
 }
 
 export class ESP32FlashTool {
-  private port: SerialPort | null = null
-  private espLoader: ESPLoader | null = null
+  private device: SerialPort | null = null
   private transport: Transport | null = null
+  private esploader: ESPLoader | null = null
   private chipName: string | null = null
+  private connected: boolean = false
 
   getPort(): SerialPort | null {
-    return this.port
+    return this.device
+  }
+
+  isConnected(): boolean {
+    return this.connected && this.device !== null && this.esploader !== null
   }
 
   async connect(): Promise<boolean> {
@@ -94,135 +83,68 @@ export class ESP32FlashTool {
         throw new Error('WebSerial API không được hỗ trợ. Vui lòng sử dụng Chrome, Edge, hoặc Opera.')
       }
 
-      // Clean up existing connection
-      await this.cleanup()
-
-      // Request port with ESP32 filters
-      console.log('Requesting serial port...')
+      console.log('🔌 Đang yêu cầu kết nối thiết bị...')
+      
+      // Request port directly (preserving user gesture)
       try {
-        this.port = await (navigator as any).serial.requestPort({
-          filters: ESP_USB_FILTERS
+        this.device = await (navigator as any).serial.requestPort({ 
+          filters: ESP_USB_FILTERS 
         })
       } catch (e: any) {
-        // If filtered request fails, try without filters
         if (e.name === 'NotFoundError') {
-          console.log('No ESP device found with filters, trying all devices...')
-          this.port = await (navigator as any).serial.requestPort()
+          throw new Error('Người dùng đã hủy chọn thiết bị')
+        } else if (e.name === 'NotAllowedError' || e.name === 'SecurityError') {
+          throw new Error('Quyền truy cập USB bị từ chối. Vui lòng cho phép quyền truy cập.')
         } else {
           throw e
         }
       }
 
-      if (!this.port) {
+      if (!this.device) {
         throw new Error('Không thể lấy port. Vui lòng thử lại.')
       }
 
-      // Get port info for debugging
-      const portInfo = this.port.getInfo()
-      console.log('Port info:', {
-        vendorId: portInfo.usbVendorId?.toString(16),
-        productId: portInfo.usbProductId?.toString(16)
-      })
+      console.log('✅ Port selected')
 
-      // Open port at ROM bootloader baud rate
-      console.log('Opening port at 115200 baud...')
-      await this.port.open({
-        baudRate: 115200,
-        dataBits: 8,
-        stopBits: 1,
-        parity: 'none',
-        flowControl: 'none',
-        bufferSize: 256 * 1024
-      })
-      console.log('✅ Port opened successfully')
+      // Create transport
+      this.transport = new Transport(this.device)
 
-      // Initialize transport
-      this.transport = new Transport(this.port)
+      // Default baudrate for connection
+      const baudrate = 115200
 
-      // Enter bootloader mode using DTR/RTS (CRITICAL!)
-      await enterBootloader(this.transport)
+      console.log('🔗 Đang kết nối và nhận dạng chip...')
 
-      // Initialize ESPLoader
-      console.log('Initializing ESPLoader...')
-      this.espLoader = new ESPLoader({
+      // Create ESPLoader with simplified terminal
+      const loaderOptions = {
         transport: this.transport,
-        baudrate: 115200,
-        romBaudrate: 115200,
+        baudrate: baudrate,
+        romBaudrate: baudrate,
         terminal: {
           clean: () => {},
           writeLine: (data: string) => console.log('[ESP]', data),
           write: (data: string) => console.log('[ESP]', data)
         }
-      })
-
-      // Connect with retries (like esp-web-tools)
-      console.log('Connecting to bootloader...')
-      let connected = false
-      let lastError = null
-      const MAX_ATTEMPTS = 3
-
-      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-        try {
-          console.log(`Connection attempt ${attempt}/${MAX_ATTEMPTS}...`)
-          await this.espLoader.connect()
-          connected = true
-          console.log('✅ Bootloader connected')
-          break
-        } catch (e: any) {
-          lastError = e
-          console.warn(`Attempt ${attempt} failed:`, e.message)
-          
-          if (attempt < MAX_ATTEMPTS) {
-            console.log('Retrying in 500ms...')
-            await new Promise(resolve => setTimeout(resolve, 500))
-            // Re-enter bootloader mode
-            await enterBootloader(this.transport!)
-          }
-        }
       }
 
-      if (!connected) {
-        throw new Error(`Không thể kết nối bootloader sau ${MAX_ATTEMPTS} lần thử. ${lastError?.message || ''}`)
-      }
+      this.esploader = new ESPLoader(loaderOptions)
 
-      // Detect chip
-      console.log('Detecting chip...')
-      await this.espLoader.detectChip()
-      // Note: ESPLoader.detectChip() doesn't return chip name, but detects it internally
-      this.chipName = 'ESP32' // Generic name, actual chip is detected by esptool
-      console.log(`✅ Chip detected successfully`)
+      // Connect and detect chip using main()
+      const chipDesc = await this.esploader.main()
+      this.chipName = this.esploader.chip?.CHIP_NAME || 'ESP32'
+
+      // Read flash ID
+      await this.esploader.flashId()
+
+      this.connected = true
+
+      console.log(`✅ Kết nối thành công: ${chipDesc}`)
 
       return true
 
     } catch (error: any) {
-      console.error('Connection error:', error)
-      
-      // Auto-retry on "port already open"
-      if (error?.message?.includes('port is already open')) {
-        console.warn('Port already open, cleaning up and retrying...')
-        await this.cleanup()
-        await new Promise(resolve => setTimeout(resolve, 500))
-        // Only retry once to avoid infinite loop
-        return this.connect()
-      }
-
-      // Cleanup on error
+      console.error('❌ Lỗi kết nối:', error)
       await this.cleanup()
-
-      // User-friendly error messages
-      let errorMsg = error.message || 'Lỗi không xác định'
-      
-      if (error.name === 'NotFoundError') {
-        errorMsg = 'Không tìm thấy thiết bị USB.\n\n📌 Vui lòng:\n• Kết nối ESP32 vào máy tính\n• Nhấn giữ nút BOOT khi cắm USB\n• Thử cổng USB khác\n• Cài driver CH340/CP2102'
-      } else if (error.name === 'NotAllowedError' || error.name === 'SecurityError') {
-        errorMsg = 'Quyền truy cập bị từ chối.\n\n📌 Vui lòng:\n• Cho phép quyền truy cập khi popup hiện\n• Làm mới trang và thử lại\n• Kiểm tra settings trình duyệt'
-      } else if (error.message?.includes('timeout') || error.message?.includes('sync')) {
-        errorMsg = 'Không thể đồng bộ với ESP32.\n\n📌 Cách vào chế độ flash:\n1️⃣ Nhấn giữ nút BOOT\n2️⃣ Cắm cáp USB vào máy\n3️⃣ Thả nút BOOT\n4️⃣ Thử kết nối lại'
-      } else if (error.message?.includes('Failed to execute')) {
-        errorMsg = 'Thiết bị đang được sử dụng.\n\n📌 Vui lòng:\n• Đóng Arduino IDE\n• Đóng PlatformIO\n• Đóng Serial Monitor khác\n• Đợi 3 giây và thử lại'
-      }
-
-      throw new Error(errorMsg)
+      throw error
     }
   }
 
@@ -231,36 +153,56 @@ export class ESP32FlashTool {
   }
 
   private async cleanup(): Promise<void> {
+    console.log('🧹 Cleaning up...')
+    
+    this.connected = false
+    this.chipName = null
+    this.esploader = null
+
+    // Disconnect transport
+    if (this.transport) {
+      try {
+        await this.transport.disconnect()
+        console.log('✅ Transport disconnected')
+      } catch (e) {
+        console.warn('⚠️ Error disconnecting transport:', e)
+      }
+      this.transport = null
+    }
+
+    this.device = null
+    
+    console.log('✅ Cleanup complete')
+  }
+
+  /**
+   * Force release all granted ports
+   */
+  async forceReleasePorts(): Promise<void> {
     try {
-      // Reset ESPLoader (no disconnect method, just null it)
-      if (this.espLoader) {
-        this.espLoader = null
-      }
-
-      // Close transport
-      if (this.transport) {
-        this.transport = null
-      }
-
-      // Close port
-      if (this.port) {
+      if (!('serial' in navigator)) return
+      
+      console.log('🧹 Giải phóng cổng...')
+      
+      // Clean up internal state
+      await this.cleanup()
+      
+      // Get all ports and try to close them
+      const ports: SerialPort[] = await (navigator as any).serial.getPorts()
+      console.log(`Tìm thấy ${ports.length} cổng`)
+      
+      for (const port of ports) {
         try {
-          if (this.port.readable) {
-            await this.port.close()
-            console.log('Port closed')
-          }
+          await port.close()
+          console.log('✅ Đã đóng cổng')
         } catch (e) {
-          console.log('Port close error (safe to ignore):', e)
+          console.warn('⚠️ Không thể đóng cổng:', e)
         }
-        this.port = null
       }
-
-      this.chipName = null
-
-      // Wait for cleanup to complete
-      await new Promise(resolve => setTimeout(resolve, 250))
+      
+      console.log('✅ Đã giải phóng tất cả cổng')
     } catch (error) {
-      console.error('Cleanup error:', error)
+      console.error('❌ Lỗi giải phóng cổng:', error)
     }
   }
 
@@ -269,7 +211,7 @@ export class ESP32FlashTool {
     onProgress?: (progress: FlashProgress) => void
   ): Promise<boolean> {
     try {
-      if (!this.espLoader || !this.transport) {
+      if (!this.esploader || !this.transport || !this.connected) {
         throw new Error('ESP32 chưa được kết nối. Vui lòng kết nối trước.')
       }
 
@@ -322,7 +264,7 @@ export class ESP32FlashTool {
           progress: 15,
           message: '🗑️ Đang xóa flash (merged firmware)...'
         })
-        await this.espLoader.eraseFlash()
+        await this.esploader.eraseFlash()
         console.log('Flash erased')
       } else {
         console.log('App-only firmware - skipping full erase')
@@ -339,7 +281,7 @@ export class ESP32FlashTool {
       const flashAddress = hasMagicByte ? 0x0 : 0x10000
       console.log(`Flashing to address: 0x${flashAddress.toString(16)}`)
 
-      await this.espLoader.writeFlash({
+      await this.esploader.writeFlash({
         fileArray: [{
           data: firmwareBase64,
           address: flashAddress
@@ -416,14 +358,10 @@ export class ESP32FlashTool {
   }
 
   async testBasicConnection(): Promise<boolean> {
-    return this.port !== null && this.espLoader !== null
+    return this.connected && this.device !== null && this.esploader !== null
   }
 
   async getDeviceInfo(): Promise<string | null> {
     return this.chipName
-  }
-
-  isConnected(): boolean {
-    return this.port !== null && this.espLoader !== null
   }
 }

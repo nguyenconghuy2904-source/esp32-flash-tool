@@ -305,18 +305,11 @@ export default function Home() {
       return
     }
 
-    // Check if WebSerial is not blocked by browser
-    try {
-      // Test if we can access serial at all
-      const ports = await (navigator as any).serial.getPorts()
-      console.log('Available serial ports:', ports.length)
-    } catch (error: any) {
-      if (error.name === 'NotAllowedError') {
-        setFlashStatus(`❌ WebSerial bị chặn bởi trình duyệt:\n• Cho phép WebSerial trong cài đặt trình duyệt\n• Làm mới trang và thử lại\n• Kiểm tra extension chặn WebSerial`)
-        return
-      }
-      console.log('Serial ports check:', error?.message)
-    }
+    // NOTE: Do NOT call async checks like getPorts() before requesting a port.
+    // requestPort() must be invoked during a user gesture (click). Calling
+    // async functions first breaks the gesture and the browser will refuse
+    // to show the port selection dialog. We'll perform diagnostics after
+    // connect() instead.
 
     try {
       setFlashStatus('🔌 Đang kết nối với ESP32...')
@@ -770,6 +763,20 @@ export default function Home() {
                         className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-6 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-xl"
                       >
                         🔧 Kiểm tra
+                      </button>
+                      <button
+                        onClick={async () => {
+                          setFlashStatus('🧹 Đang giải phóng cổng...')
+                          try {
+                            await flashTool.current.forceReleasePorts()
+                            setFlashStatus('✅ Đã giải phóng cổng. Hãy thử kết nối lại.')
+                          } catch (e: any) {
+                            setFlashStatus(`❌ Không thể giải phóng cổng: ${e?.message || e}`)
+                          }
+                        }}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-xl"
+                      >
+                        🧹 Giải phóng cổng
                       </button>
                     </>
                   ) : (

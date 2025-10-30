@@ -1,5 +1,23 @@
 # 🐛 HƯỚNG DẪN DEBUG LỖI FLASH FIRMWARE
 
+## 💡 CẢI TIẾN MỚI (v2.1 - USER GESTURE FIX)
+
+Tool đã được cải tiến để hoạt động giống **ESP Launchpad** với các tính năng:
+
+✅ **🔥 Request port NGAY LẬP TỨC** - Bảo vệ user gesture (FIX CHÍNH!)  
+✅ **Clean up ports sau khi chọn** - Không phá vỡ user gesture  
+✅ **Bắt lỗi khi người dùng từ chối quyền** - Thông báo rõ ràng hơn  
+✅ **Kiểm tra port readable/writable** - Đảm bảo port thật sự mở  
+✅ **Gọi esptool.connect() chỉ sau khi port mở thành công** - Tránh lỗi kết nối
+
+### 🐛 Lỗi đã fix: "Popup chọn port không hiện"
+
+**Nguyên nhân:** Các async operations (`cleanup()`, `getPorts()`) trước `requestPort()` phá vỡ user gesture chain.
+
+**Giải pháp:** Gọi `requestPort()` TRƯỚC mọi async operation khác!
+
+---
+
 ## ⚠️ Bạn đang gặp lỗi này:
 ```
 ❌ Flash firmware thất bại. Vui lòng kiểm tra console để biết chi tiết.
@@ -171,6 +189,35 @@ Ctrl+C (copy)
 - [ ] Thấy "✅ Đã kết nối ESP32"
 - [ ] Có chọn đúng COM port
 - [ ] Giữ BOOT nếu không detect được
+
+---
+
+## 🔄 QUY TRÌNH KẾT NỐI MỚI (v2.1)
+
+Tool hiện tại sử dụng quy trình kết nối tương tự **ESP Launchpad**:
+
+```
+1️⃣ Request port NGAY LẬP TỨC (🔥 preserving user gesture!)
+   ↓
+2️⃣ Clean up other open ports (sau khi đã có port)
+   ↓
+3️⃣ Open the selected port (kiểm tra lỗi "already open")
+   ↓
+4️⃣ Verify port readable & writable ✅
+   ↓
+5️⃣ Initialize transport & ESPLoader
+   ↓
+6️⃣ Connect to bootloader (esptool-js tự động xử lý DTR/RTS)
+   ↓
+7️⃣ Detect chip type
+```
+
+**Lợi ích:**
+- ✅ Popup chọn port LUÔN hiện (không bị chặn bởi browser)
+- ✅ Ít lỗi "port already open" hơn
+- ✅ Thông báo lỗi rõ ràng hơn
+- ✅ Tỷ lệ kết nối thành công cao hơn
+- ✅ Tương thích hoàn toàn với ESP Launchpad/esp-web-tools
 
 ---
 
