@@ -171,19 +171,50 @@ export class ESP32FlashTool {
       this.transport = null
       this.espLoader = null
 
-      // Ensure the selected port is closed before attempting a fresh open (handles stale open handles)
-      await this.safeClosePort(this.port, 'cổng serial đã chọn (trước khi mở)')
+      // Force close the selected port if it's already open (critical fix for "port already open" error)
+      console.log('🔒 Kiểm tra và đóng port nếu đang mở...')
+      try {
+        // Try to close the port - this will fail silently if already closed
+        await this.port.close()
+        console.log('✅ Port đã được đóng')
+        // Wait for port to fully release
+        await new Promise(resolve => setTimeout(resolve, 300))
+      } catch (closeError: any) {
+        // Port is already closed or error closing - that's OK
+        console.log('ℹ️ Port đã ở trạng thái đóng hoặc không thể đóng (tiếp tục)')
+      }
 
       // Open port with the desired settings
-      console.log('📂 Opening port at 115200 baud...')
-      await this.port.open({
-        baudRate: 115200,
-        dataBits: 8,
-        stopBits: 1,
-        parity: 'none',
-        flowControl: 'none',
-        bufferSize: 256 * 1024
-      })
+      console.log('📂 Đang mở port với baudrate 115200...')
+      
+      try {
+        await this.port.open({
+          baudRate: 115200,
+          dataBits: 8,
+          stopBits: 1,
+          parity: 'none',
+          flowControl: 'none',
+          bufferSize: 256 * 1024
+        })
+      } catch (openError: any) {
+        console.error('❌ Lỗi mở port:', openError)
+        
+        // If still "already open", this means another application is using it
+        if (openError.message?.includes('already open')) {
+          throw new Error(
+            '⚠️ Cổng serial đang được sử dụng bởi ứng dụng khác!\n\n' +
+            '📌 Vui lòng:\n' +
+            '1️⃣ Đóng Arduino IDE\n' +
+            '2️⃣ Đóng PlatformIO / Serial Monitor\n' +
+            '3️⃣ Đóng tất cả tab có WebSerial khác\n' +
+            '4️⃣ Click "🧹 Giải phóng cổng"\n' +
+            '5️⃣ Thử kết nối lại\n\n' +
+            `Chi tiết: ${openError.message}`
+          )
+        }
+        
+        throw openError
+      }
 
       if (!this.port.readable || !this.port.writable) {
         throw new Error('Cổng serial không hỗ trợ đọc/ghi. Vui lòng rút cắm lại thiết bị và thử lại.')
@@ -194,35 +225,97 @@ export class ESP32FlashTool {
       // Initialize transport
       this.transport = new Transport(this.port)
 
-      // Initialize ESPLoader
-      this.espLoader = new ESPLoader({
+      // Initialize ESPLoader with terminal interface
+      const baudrate = 115200
+      const espLoaderTerminal = {
+        clean: () => {},
+        writeLine: (data: string) => console.log('[ESP]', data),
+        write: (data: string) => console.log('[ESP]', data)
+      }
+
+      const loaderOptions = {
         transport: this.transport,
-        baudrate: 115200,
-        romBaudrate: 115200,
-        terminal: {
-          clean: () => {},
-          writeLine: (data: string) => console.log('[ESP]', data),
-          write: (data: string) => console.log('[ESP]', data)
+        baudrate: baudrate,
+        romBaudrate: baudrate,
+        terminal: espLoaderTerminal
+      }
+
+      this.espLoader = new ESPLoader(loaderOptions)
+
+      // Connect and detect chip using main() - this does both connect and detectChip automatically
+      console.log('🔗 Đang kết nối và nhận dạng chip...')
+      
+      let chipDesc: string
+      let retryCount = 0
+      const maxRetries = 3
+      
+      while (retryCount < maxRetries) {
+        try {
+          chipDesc = await this.espLoader.main()
+          this.chipName = this.espLoader.chip.CHIP_NAME
+          
+          // Get flash ID for additional info
+          await this.espLoader.flashId()
+          
+          console.log(`✅ Kết nối thành công: ${chipDesc}`)
+          return true
+          
+        } catch (mainError: any) {
+          retryCount++
+          console.warn(`⚠️ Lần thử ${retryCount}/${maxRetries} thất bại: ${mainError.message}`)
+          
+          if (retryCount >= maxRetries) {
+            // All retries failed
+            throw new Error(
+              `Không thể kết nối bootloader sau ${maxRetries} lần thử.\n\n` +
+              `💡 Vui lòng:\n` +
+              `• Nhấn giữ nút BOOT trên ESP32\n` +
+              `• Cắm lại cáp USB (giữ BOOT)\n` +
+              `• Thả nút BOOT sau 2 giây\n` +
+              `• Thử kết nối lại\n\n` +
+              `Chi tiết lỗi: ${mainError.message}`
+            )
+          }
+          
+          // Wait before retry
+          console.log('⏳ Đợi 500ms trước khi thử lại...')
+          await new Promise(resolve => setTimeout(resolve, 500))
         }
-      })
+      }
 
-      // Connect to bootloader
-      console.log('🔗 Connecting to bootloader...')
-      await this.espLoader.connect()
-      console.log('✅ Bootloader connected')
-
-      // Detect chip
-      console.log('🔍 Detecting chip type...')
-      await this.espLoader.detectChip()
-      const detectedChip = (this.espLoader as any)?.chipFamily || 'ESP32'
-      this.chipName = detectedChip
-      console.log(`✅ Chip detected: ${this.chipName}`)
-
-      return true
+      return false
     } catch (error: any) {
       console.error('❌ Connection error:', error)
       await this.cleanup()
-      throw error
+      
+      // Provide better error messages
+      let userMessage = error.message
+      
+      if (error.message?.includes('already open')) {
+        userMessage = 
+          '⚠️ Cổng serial đang được sử dụng!\n\n' +
+          '📌 Cách khắc phục:\n' +
+          '1️⃣ Click nút "🧹 Giải phóng cổng"\n' +
+          '2️⃣ Đợi 2 giây\n' +
+          '3️⃣ Thử kết nối lại\n\n' +
+          '💡 Nếu vẫn lỗi:\n' +
+          '• Đóng Arduino IDE / PlatformIO\n' +
+          '• Đóng Serial Monitor khác\n' +
+          '• Refresh trang (Ctrl+Shift+R)'
+      } else if (error.message?.includes('readable') || error.message?.includes('writable')) {
+        userMessage =
+          '⚠️ Cổng serial không hợp lệ!\n\n' +
+          '📌 Cách khắc phục:\n' +
+          '1️⃣ Rút cáp USB\n' +
+          '2️⃣ Đợi 3 giây\n' +
+          '3️⃣ Cắm lại cáp USB\n' +
+          '4️⃣ Thử kết nối lại\n\n' +
+          '💡 Kiểm tra:\n' +
+          '• Cáp USB có hỗ trợ data?\n' +
+          '• Driver đã cài đúng chưa?'
+      }
+      
+      throw new Error(userMessage)
     }
   }
 
